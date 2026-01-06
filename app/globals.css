@@ -1,8 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700;800;900&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --void: #000000;
+  --obsidian: #0a0a0a;
+  --smoke: #111111;
+  --ash: #1a1a1a;
+  --steel: #2a2a2a;
+  --concrete: #404040;
+  --cement: #666666;
+  --fog: #999999;
+  --bone: #cccccc;
+  --pure: #ffffff;
+  --acid: #00FF00;
+  --acid-yellow: #FFFF00;
+  --blood: #FF0033;
+  
+  --background: var(--void);
+  --foreground: var(--pure);
+  
+  /* Polices */
+  --font-heading: 'Dela Gothic One', sans-serif;
+  --font-body: 'IBM Plex Mono', monospace;
+  --font-display: 'Unbounded', sans-serif;
+  --font-arabic: 'Cairo', 'Noto Sans Arabic', sans-serif;
+  --font-elegant: 'Playfair Display', serif;
+  --font-classic: 'Amiri', serif;
 }
 
 @theme inline {
@@ -12,15 +35,303 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background: var(--void);
+  color: var(--pure);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* Font classes */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--acid) var(--void);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--acid);
+  border-radius: 0;
+}
+
+/* Selection */
+::selection {
+  background: var(--acid);
+  color: var(--void);
+}
+
+/* Smooth transitions for all interactive elements */
+a, button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes revealUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scrollLine {
+  0%, 100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleY(0.5);
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(-5deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(5deg);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-10deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(10deg);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STYLES CLASSES - COULEURS AFRIQUE DU NORD & OUEST
+   ═══════════════════════════════════════════════════════════ */
+
+/* Polices avec style arabe/méditerranéen */
+.font-arabic {
+  font-family: var(--font-arabic);
+}
+
+.font-elegant {
+  font-family: var(--font-elegant);
+}
+
+.font-classic {
+  font-family: var(--font-classic);
+}
+
+/* Couleurs Algérie */
+.text-rouge-algerie {
+  color: var(--color-rouge-algerie);
+}
+
+.bg-rouge-algerie {
+  background-color: var(--color-rouge-algerie);
+}
+
+.border-rouge-algerie {
+  border-color: var(--color-rouge-algerie);
+}
+
+.text-vert-algerie {
+  color: var(--color-vert-algerie);
+}
+
+.bg-vert-algerie {
+  background-color: var(--color-vert-algerie);
+}
+
+.border-vert-algerie {
+  border-color: var(--color-vert-algerie);
+}
+
+/* Couleurs Maroc */
+.text-bleu-maroc {
+  color: var(--color-bleu-maroc);
+}
+
+.bg-bleu-maroc {
+  background-color: var(--color-bleu-maroc);
+}
+
+.border-bleu-maroc {
+  border-color: var(--color-bleu-maroc);
+}
+
+.text-rouge-maroc {
+  color: var(--color-rouge-maroc);
+}
+
+.bg-rouge-maroc {
+  background-color: var(--color-rouge-maroc);
+}
+
+.border-rouge-maroc {
+  border-color: var(--color-rouge-maroc);
+}
+
+/* Couleurs Tunisie */
+.text-vert-tunisie {
+  color: var(--color-vert-tunisie);
+}
+
+.bg-vert-tunisie {
+  background-color: var(--color-vert-tunisie);
+}
+
+.border-vert-tunisie {
+  border-color: var(--color-vert-tunisie);
+}
+
+.text-rouge-tunisie {
+  color: var(--color-rouge-tunisie);
+}
+
+.bg-rouge-tunisie {
+  background-color: var(--color-rouge-tunisie);
+}
+
+.border-rouge-tunisie {
+  border-color: var(--color-rouge-tunisie);
+}
+
+/* Couleurs Afrique de l'Ouest */
+.text-or-afrique {
+  color: var(--color-or-afrique);
+}
+
+.bg-or-afrique {
+  background-color: var(--color-or-afrique);
+}
+
+.border-or-afrique {
+  border-color: var(--color-or-afrique);
+}
+
+.text-terre-afrique {
+  color: var(--color-terre-afrique);
+}
+
+.bg-terre-afrique {
+  background-color: var(--color-terre-afrique);
+}
+
+.border-terre-afrique {
+  border-color: var(--color-terre-afrique);
+}
+
+.text-sable {
+  color: var(--color-sable);
+}
+
+.bg-sable {
+  background-color: var(--color-sable);
+}
+
+.text-ocre {
+  color: var(--color-ocre);
+}
+
+.bg-ocre {
+  background-color: var(--color-ocre);
+}
+
+/* Dégradés inspirés des drapeaux */
+.gradient-algerie {
+  background: linear-gradient(135deg, var(--color-vert-algerie) 0%, var(--color-rouge-algerie) 50%, var(--color-vert-algerie) 100%);
+}
+
+.gradient-maroc {
+  background: linear-gradient(135deg, var(--color-rouge-maroc) 0%, var(--color-bleu-maroc) 100%);
+}
+
+.gradient-tunisie {
+  background: linear-gradient(135deg, var(--color-rouge-tunisie) 0%, var(--color-vert-tunisie) 100%);
+}
+
+.gradient-afrique {
+  background: linear-gradient(135deg, var(--color-or-afrique) 0%, var(--color-terre-afrique) 50%, var(--color-ocre) 100%);
+}
+
+/* Styles de texte avec caractères spéciaux */
+.text-arabic-style {
+  font-family: var(--font-arabic);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.text-elegant-style {
+  font-family: var(--font-elegant);
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+
+/* Bordures décoratives */
+.border-pattern-afrique {
+  border: 2px solid var(--color-or-afrique);
+  border-style: double;
+}
+
+.shadow-afrique {
+  box-shadow: 0 4px 6px -1px rgba(245, 124, 0, 0.3), 0 2px 4px -1px rgba(245, 124, 0, 0.2);
 }

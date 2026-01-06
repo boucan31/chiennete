@@ -1,7 +1,11 @@
+import client from './shopify-client';
+
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 const SHOPIFY_ADMIN_API_KEY = process.env.SHOPIFY_ADMIN_API_KEY;
 const SHOPIFY_ADMIN_API_SECRET = process.env.SHOPIFY_ADMIN_API_SECRET;
+// API Version - defaults to 2024-01, can be overridden with SHOPIFY_API_VERSION
+const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2024-01';
 
 interface ShopifyProduct {
   id: string;
@@ -9,6 +13,8 @@ interface ShopifyProduct {
   handle: string;
   description: string;
   vendor: string;
+  productType?: string;
+  tags: string[];
   images: Array<{
     src: string;
     alt: string;
@@ -16,6 +22,7 @@ interface ShopifyProduct {
   variants: Array<{
     id: string;
     price: string;
+    formattedPrice: string;
     currencyCode: string;
     title: string;
   }>;
@@ -40,7 +47,9 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
               handle
               description
               vendor
-              images(first: 1) {
+              productType
+              tags
+              images(first: 3) {
                 edges {
                   node {
                     src
@@ -48,7 +57,7 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
                   }
                 }
               }
-              variants(first: 1) {
+              variants(first: 10) {
                 edges {
                   node {
                     id
@@ -70,7 +79,7 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
     const variables = { first: 20 };
 
     const response = await fetch(
-      `https://${SHOPIFY_STORE_DOMAIN}/api/2024-01/graphql.json`,
+      `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`,
       {
         method: 'POST',
         headers: {
@@ -92,24 +101,45 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
       return [];
     }
 
-    return data.data.products.edges.map((edge: any) => ({
-      id: edge.node.id,
-      title: edge.node.title,
-      handle: edge.node.handle,
-      description: edge.node.description,
-      vendor: edge.node.vendor,
-      images: edge.node.images.edges.map((img: any) => ({
-        src: img.node.src,
-        alt: img.node.altText || edge.node.title,
-      })),
-      variants: edge.node.variants.edges.map((variant: any) => ({
-        id: variant.node.id,
-        price: `${variant.node.price.amount} ${variant.node.price.currencyCode}`,
-        currencyCode: variant.node.price.currencyCode,
-        title: variant.node.title,
-      })),
-      onlineStoreUrl: edge.node.onlineStoreUrl,
-    }));
+    return data.data.products.edges.map((edge: any) => {
+      const firstVariant = edge.node.variants.edges[0]?.node;
+      const priceAmount = parseFloat(firstVariant?.price.amount || '0');
+      const currencyCode = firstVariant?.price.currencyCode || 'EUR';
+      
+      // Format price in euros
+      const formattedPrice = new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: currencyCode,
+      }).format(priceAmount);
+
+      return {
+        id: edge.node.id,
+        title: edge.node.title,
+        handle: edge.node.handle,
+        description: edge.node.description,
+        vendor: edge.node.vendor,
+        productType: edge.node.productType || '',
+        tags: edge.node.tags || [],
+        images: edge.node.images.edges.map((img: any) => ({
+          src: img.node.src,
+          alt: img.node.altText || edge.node.title,
+        })),
+        variants: edge.node.variants.edges.map((variant: any) => {
+          const variantPrice = parseFloat(variant.node.price.amount);
+          return {
+            id: variant.node.id,
+            price: `${variant.node.price.amount} ${variant.node.price.currencyCode}`,
+            formattedPrice: new Intl.NumberFormat('fr-FR', {
+              style: 'currency',
+              currency: variant.node.price.currencyCode,
+            }).format(variantPrice),
+            currencyCode: variant.node.price.currencyCode,
+            title: variant.node.title,
+          };
+        }),
+        onlineStoreUrl: edge.node.onlineStoreUrl,
+      };
+    });
   } catch (error) {
     console.error('Error fetching products from Shopify:', error);
     return [];
@@ -125,7 +155,7 @@ export async function getProductsAdmin(): Promise<ShopifyProduct[]> {
 
   try {
     const response = await fetch(
-      `https://${SHOPIFY_ADMIN_API_KEY}:${SHOPIFY_ADMIN_API_SECRET}@${SHOPIFY_STORE_DOMAIN}/admin/api/2024-01/products.json`,
+      `https://${SHOPIFY_ADMIN_API_KEY}:${SHOPIFY_ADMIN_API_SECRET}@${SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/products.json`,
       {
         headers: {
           'Content-Type': 'application/json',
