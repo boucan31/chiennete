@@ -46,10 +46,30 @@ export default function Collection({ productsByType, productTypes }: CollectionP
                   {type}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {productsByType[type].map((product: any, index: number) => (
-                    <div
+                  {productsByType[type].map((product: any, index: number) => {
+                    // Construire l'URL Shopify
+                    const getShopifyUrl = () => {
+                      if (product.onlineStoreUrl) {
+                        return product.onlineStoreUrl;
+                      }
+                      if (product.handle) {
+                        // Utiliser le domaine depuis les variables d'environnement ou le domaine par défaut
+                        const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || 'lachienneteofficiel.fr';
+                        // Enlever .myshopify.com si présent et utiliser le domaine public
+                        const publicDomain = storeDomain.replace('.myshopify.com', '');
+                        return `https://${publicDomain}/products/${product.handle}`;
+                      }
+                      return '#';
+                    };
+                    const shopifyUrl = getShopifyUrl();
+                    
+                    return (
+                    <a
                       key={product.id}
-                      className="group relative aspect-[3/4] bg-[#111111] overflow-hidden transition-all duration-500 hover:-translate-y-2.5"
+                      href={shopifyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative aspect-[3/4] bg-[#111111] overflow-hidden transition-all duration-500 hover:-translate-y-2.5 block"
                       data-hover
                     >
                       <div className="absolute inset-0 border border-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none" style={{ borderImage: 'linear-gradient(to right, #00FF00, #FFFF00) 1' }}></div>
@@ -96,8 +116,9 @@ export default function Collection({ productsByType, productTypes }: CollectionP
                       <div className="absolute bottom-6 left-6 text-[0.5rem] tracking-[0.15em] text-[#666666] uppercase transition-opacity duration-300 group-hover:opacity-0">
                         {type}
                       </div>
-                    </div>
-                  ))}
+                    </a>
+                    );
+                  })}
                 </div>
               </div>
             ))}
