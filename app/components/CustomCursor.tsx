@@ -38,14 +38,11 @@ export default function CustomCursor() {
           isActive ? 'w-[60px] h-[60px] border-red-500 rotate-45 rounded-none' : 'w-5 h-5 rounded-full'
         }`}
         style={{
-          border: isActive ? '2px solid #FF0033' : '2px solid',
-          borderImage: isActive ? 'none' : 'linear-gradient(to right, #00FF00, #FFFF00) 1',
-        }}
-        style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
           transform: `translate(-50%, -50%) ${isActive ? 'rotate(45deg)' : ''}`,
-          border: '2px solid',
+          border: isActive ? '2px solid #FF0033' : '2px solid',
+          borderImage: isActive ? 'none' : 'linear-gradient(to right, #00FF00, #FFFF00) 1',
         }}
       />
       <div
