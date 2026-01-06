@@ -23,7 +23,7 @@ export default function Collection({ productsByType, productTypes }: CollectionP
 
         <div className="flex justify-between items-end mb-16">
           <h2 className="font-['Dela_Gothic_One',sans-serif] text-[clamp(2.5rem,6vw,5rem)]">
-            DROP <span className="text-transparent" style={{ WebkitTextStroke: '2px', WebkitTextStrokeImage: 'linear-gradient(to right, #00FF00, #FFFF00)' }}>001</span>
+            DROP <span className="text-transparent" style={{ WebkitTextStroke: '2px #80FF00' }}>001</span>
           </h2>
           <a href="#join" className="flex items-center gap-4 no-underline text-[0.65rem] tracking-[0.2em] uppercase transition-all hover:gap-6 bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">
             TOUT VOIR
