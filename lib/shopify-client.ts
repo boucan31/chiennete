@@ -1,7 +1,7 @@
 // lib/shopify-client.ts
 // Configuration Shopify Storefront API Client
 
-import { createStorefrontClient } from '@shopify/storefront-api-client';
+import { createStorefrontApiClient } from '@shopify/storefront-api-client';
 
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
@@ -15,7 +15,7 @@ if (!SHOPIFY_STORE_DOMAIN || !SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
 }
 
 // Création du client Storefront API
-const client = createStorefrontClient({
+const client = createStorefrontApiClient({
   storeDomain: SHOPIFY_STORE_DOMAIN || '',
   apiVersion: SHOPIFY_API_VERSION,
   publicAccessToken: SHOPIFY_STOREFRONT_ACCESS_TOKEN || '',
