@@ -31,10 +31,7 @@ export default function Hero() {
 
       {/* Content */}
       <div className="text-center z-10 px-4 opacity-0 animate-[fadeUp_1s_ease_2.8s_forwards]">
-        <div className="inline-flex items-center gap-4 px-6 py-3 border mb-10 relative" style={{ borderImage: 'linear-gradient(to right, rgba(0, 255, 0, 0.4), rgba(255, 255, 0, 0.4)) 1', background: 'linear-gradient(to right, rgba(0, 255, 0, 0.05), rgba(255, 255, 0, 0.05))' }}>
-          <div className="w-2 h-2 animate-pulse bg-gradient-to-r from-green-500 to-yellow-500"></div>
-          <span className="text-[0.6rem] tracking-[0.35em] uppercase bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">Drop 001 — Disponible bientôt</span>
-        </div>
+        
 
         <h1 className="font-['Dela_Gothic_One',sans-serif] text-[clamp(4rem,18vw,16rem)] leading-[0.85] tracking-[-0.02em] mb-4">
           <span className="block overflow-hidden">

@@ -21,7 +21,7 @@ export default function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 w-full px-12 py-6 flex justify-between items-center z-[1000] mix-blend-difference">
-      <a href="/" className="font-['Dela_Gothic_One',sans-serif] text-2xl tracking-[0.15em] text-white no-underline relative">
+      <a href="/" className="font-['Dela_Gothic_One',sans-serif] text-2xl tracking-[0.15em] bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent no-underline relative">
         La Chienneté
         <span className="absolute top-0 -right-6 text-xs">®</span>
       </a>
