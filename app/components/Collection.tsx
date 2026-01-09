@@ -47,28 +47,13 @@ export default function Collection({ productsByType, productTypes }: CollectionP
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {productsByType[type].map((product: any, index: number) => {
-                    // Construire l'URL Shopify
-                    const getShopifyUrl = () => {
-                      if (product.onlineStoreUrl) {
-                        return product.onlineStoreUrl;
-                      }
-                      if (product.handle) {
-                        // Utiliser le domaine depuis les variables d'environnement ou le domaine par défaut
-                        const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || 'lachienneteofficiel.fr';
-                        // Enlever .myshopify.com si présent et utiliser le domaine public
-                        const publicDomain = storeDomain.replace('.myshopify.com', '');
-                        return `https://${publicDomain}/products/${product.handle}`;
-                      }
-                      return '#';
-                    };
-                    const shopifyUrl = getShopifyUrl();
+                    // Lien vers la page produit dans l'app React (pas Shopify directement)
+                    const productUrl = product.handle ? `/product/${product.handle}` : '#';
                     
                     return (
                     <a
                       key={product.id}
-                      href={shopifyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={productUrl}
                       className="group relative aspect-[3/4] bg-[#111111] overflow-hidden transition-all duration-500 hover:-translate-y-2.5 block"
                       data-hover
                     >

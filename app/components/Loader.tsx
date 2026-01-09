@@ -1,12 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Loader() {
   const [progress, setProgress] = useState(0);
   const [isHidden, setIsHidden] = useState(false);
+  const pathname = usePathname();
+
+  // Ne pas afficher le loader sur les pages produits/articles
+  const shouldHideLoader = pathname?.startsWith('/product') || pathname?.startsWith('/article');
 
   useEffect(() => {
+    // Si on est sur une page produit/article, masquer immédiatement
+    if (shouldHideLoader) {
+      setIsHidden(true);
+      return;
+    }
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         const newProgress = prev + Math.random() * 3;
@@ -22,9 +33,9 @@ export default function Loader() {
     }, 30);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [shouldHideLoader]);
 
-  if (isHidden) return null;
+  if (isHidden || shouldHideLoader) return null;
 
   return (
     <div

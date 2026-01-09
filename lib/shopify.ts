@@ -192,3 +192,109 @@ export async function getProductsAdmin(): Promise<ShopifyProduct[]> {
   }
 }
 
+// Get a single product by handle
+export async function getProductByHandle(handle: string): Promise<ShopifyProduct | null> {
+  if (!SHOPIFY_STORE_DOMAIN || !SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
+    console.warn('Shopify credentials not configured');
+    return null;
+  }
+
+  try {
+    const query = `
+      query getProductByHandle($handle: String!) {
+        product(handle: $handle) {
+          id
+          title
+          handle
+          description
+          vendor
+          productType
+          tags
+          images(first: 10) {
+            edges {
+              node {
+                src
+                altText
+              }
+            }
+          }
+          variants(first: 10) {
+            edges {
+              node {
+                id
+                price {
+                  amount
+                  currencyCode
+                }
+                title
+              }
+            }
+          }
+          onlineStoreUrl
+        }
+      }
+    `;
+
+    const variables = { handle };
+
+    const response = await fetch(
+      `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_ACCESS_TOKEN,
+        },
+        body: JSON.stringify({ query, variables }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Shopify API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.errors || !data.data.product) {
+      console.error('Shopify GraphQL errors:', data.errors);
+      return null;
+    }
+
+    const product = data.data.product;
+    const firstVariant = product.variants.edges[0]?.node;
+    const priceAmount = parseFloat(firstVariant?.price.amount || '0');
+    const currencyCode = firstVariant?.price.currencyCode || 'EUR';
+
+    return {
+      id: product.id,
+      title: product.title,
+      handle: product.handle,
+      description: product.description,
+      vendor: product.vendor,
+      productType: product.productType || '',
+      tags: product.tags || [],
+      images: product.images.edges.map((img: any) => ({
+        src: img.node.src,
+        alt: img.node.altText || product.title,
+      })),
+      variants: product.variants.edges.map((variant: any) => {
+        const variantPrice = parseFloat(variant.node.price.amount);
+        return {
+          id: variant.node.id,
+          price: `${variant.node.price.amount} ${variant.node.price.currencyCode}`,
+          formattedPrice: new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: variant.node.price.currencyCode,
+          }).format(variantPrice),
+          currencyCode: variant.node.price.currencyCode,
+          title: variant.node.title,
+        };
+      }),
+      onlineStoreUrl: product.onlineStoreUrl,
+    };
+  } catch (error) {
+    console.error('Error fetching product from Shopify:', error);
+    return null;
+  }
+}
+
