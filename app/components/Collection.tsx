@@ -53,16 +53,10 @@ export default function Collection({ productsByType, productTypes }: CollectionP
           <span className="text-[0.6rem] tracking-[0.3em] text-[#666666] uppercase">Collection</span>
         </div>
 
-        <div className="flex justify-between items-end mb-16">
+        <div className="mb-16">
           <h2 className="font-['Dela_Gothic_One',sans-serif] text-[clamp(2.5rem,6vw,5rem)]">
             DROP <span className="text-transparent" style={{ WebkitTextStroke: '2px #80FF00' }}>001</span>
           </h2>
-          <a href="#join" className="flex items-center gap-4 no-underline text-[0.65rem] tracking-[0.2em] uppercase transition-all hover:gap-6 bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">
-            TOUT VOIR
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
         </div>
 
         {productTypes.length === 0 ? (
@@ -74,9 +68,6 @@ export default function Collection({ productsByType, productTypes }: CollectionP
           <>
             {productTypes.map((type, typeIndex) => (
               <div key={type} className={typeIndex > 0 ? 'mt-32 pt-16 border-t border-white/10' : ''}>
-                <h3 className="font-['Dela_Gothic_One',sans-serif] text-3xl mb-12 text-center">
-                  {type}
-                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {productsByType[type].map((product: any, index: number) => {
                     // Lien vers la page produit dans l'app React (pas Shopify directement)
@@ -102,10 +93,10 @@ export default function Collection({ productsByType, productTypes }: CollectionP
                             src={product.images[0].src}
                             alt={product.title}
                             fill
-                            className="object-cover opacity-30 group-hover:opacity-50 transition-opacity duration-400"
+                            className="object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-400"
                           />
                         ) : (
-                          <span className="font-['Dela_Gothic_One',sans-serif] text-[10rem] text-white/5 group-hover:opacity-10 transition-all duration-400 bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">
+                          <span className="font-['Dela_Gothic_One',sans-serif] text-[10rem] text-white/10 group-hover:opacity-20 transition-all duration-400 bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">
                             {product.title.charAt(0).toUpperCase()}
                           </span>
                         )}

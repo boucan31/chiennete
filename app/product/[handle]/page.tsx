@@ -1,8 +1,8 @@
 import { getProductByHandle } from '@/lib/shopify';
-import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
 import VariantAddToCartButton from '@/app/components/VariantAddToCartButton';
+import ProductImageGallery from '@/app/components/ProductImageGallery';
 import { notFound } from 'next/navigation';
 
 export default async function ProductPage({ 
@@ -17,7 +17,6 @@ export default async function ProductPage({
     notFound();
   }
 
-  const mainImage = product.images[0]?.src || '';
   const firstVariant = product.variants[0];
 
   return (
@@ -27,34 +26,7 @@ export default async function ProductPage({
       <div className="max-w-[1400px] mx-auto px-6 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Images */}
-          <div className="space-y-4">
-            {mainImage && (
-              <div className="aspect-square relative bg-[#111111] overflow-hidden">
-                <Image
-                  src={mainImage}
-                  alt={product.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-            )}
-            {product.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-4">
-                {product.images.slice(1, 5).map((image, index) => (
-                  <div key={index} className="aspect-square relative bg-[#111111] overflow-hidden">
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 25vw, 12.5vw"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductImageGallery images={product.images} />
 
           {/* Product Info */}
           <div className="flex flex-col justify-center">

@@ -207,6 +207,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
           title
           handle
           description
+          descriptionHtml
           vendor
           productType
           tags
@@ -269,7 +270,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       id: product.id,
       title: product.title,
       handle: product.handle,
-      description: product.description,
+      description: product.descriptionHtml || product.description,
       vendor: product.vendor,
       productType: product.productType || '',
       tags: product.tags || [],

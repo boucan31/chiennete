@@ -50,6 +50,17 @@ export default function Navigation() {
             <span>Rejoindre</span>
           </a>
         </li>
+        <li>
+          <a 
+            href={process.env.NEXT_PUBLIC_SHOPIFY_CART_URL || (process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ? `https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN}/cart` : 'https://lachienneteofficiel.fr/cart')} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white no-underline text-[0.65rem] tracking-[0.2em] uppercase flex items-center gap-3 transition-all hover:bg-gradient-to-r hover:from-green-500 hover:to-yellow-500 hover:bg-clip-text hover:text-transparent"
+          >
+            <span className="text-[#666666] text-[0.6rem]">04</span>
+            <span>Panier</span>
+          </a>
+        </li>
       </ul>
 
       <button className="md:hidden flex flex-col gap-1.5 bg-transparent border-none cursor-pointer p-2.5">
