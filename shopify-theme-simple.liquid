@@ -29,12 +29,34 @@
   {% endif %}
   
   <iframe 
+    id="app-iframe"
     src="{{ full_url }}"
     style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 9999999; background: #000;"
     allowfullscreen
   ></iframe>
   
   <div style="display: none !important;">{{ content_for_layout }}</div>
+  
+  <script>
+    const iframe = document.getElementById('app-iframe');
+    const appOrigin = '{{ app_url }}'.replace('https://', '').split('/')[0];
+    
+    // Écouter les messages de l'iframe pour mettre à jour l'URL
+    window.addEventListener('message', function(event) {
+      // Vérifier l'origine pour la sécurité (optionnel, peut être assoupli pour le développement)
+      // if (event.origin !== 'https://' + appOrigin) {
+      //   return;
+      // }
+      
+      // Si l'iframe demande une navigation
+      if (event.data && event.data.type === 'navigate' && event.data.url) {
+        console.log('Navigation demandée:', event.data.url);
+        iframe.src = event.data.url;
+      }
+    });
+    
+    console.log('Shopify template chargé, écoute des messages depuis:', 'https://' + appOrigin);
+  </script>
 </body>
 </html>
 

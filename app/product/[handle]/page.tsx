@@ -2,6 +2,7 @@ import { getProductByHandle } from '@/lib/shopify';
 import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
+import VariantAddToCartButton from '@/app/components/VariantAddToCartButton';
 import { notFound } from 'next/navigation';
 
 export default async function ProductPage({ 
@@ -85,7 +86,11 @@ export default async function ProductPage({
             {product.variants.length > 0 && (
               <div className="mb-8">
                 <label className="block text-sm mb-3 text-[#999999]">Variante</label>
-                <select className="w-full bg-[#111111] border border-[#2a2a2a] text-white p-3 focus:outline-none focus:border-green-500">
+                <select 
+                  id="variant-select"
+                  className="w-full bg-[#111111] border border-[#2a2a2a] text-white p-3 focus:outline-none focus:border-green-500"
+                  defaultValue={firstVariant.id}
+                >
                   {product.variants.map((variant) => (
                     <option key={variant.id} value={variant.id}>
                       {variant.title} - {variant.formattedPrice}
@@ -95,9 +100,10 @@ export default async function ProductPage({
               </div>
             )}
 
-            <button className="w-full bg-gradient-to-r from-green-500 to-yellow-500 text-black font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider hover:opacity-90 transition-opacity">
-              Ajouter au panier
-            </button>
+            <VariantAddToCartButton 
+              variants={product.variants} 
+              defaultVariantId={firstVariant.id}
+            />
 
             {product.tags.length > 0 && (
               <div className="mt-8 pt-8 border-t border-white/10">

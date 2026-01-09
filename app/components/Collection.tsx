@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface CollectionProps {
   productsByType: any;
@@ -8,6 +10,36 @@ interface CollectionProps {
 }
 
 export default function Collection({ productsByType, productTypes }: CollectionProps) {
+  const router = useRouter();
+
+  const handleProductClick = (e: React.MouseEvent<HTMLAnchorElement>, handle: string) => {
+    e.preventDefault();
+    
+    const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+    
+    if (isInIframe) {
+      // Si on est dans un iframe (Shopify), envoyer un message au parent
+      // et utiliser window.location.href pour forcer la navigation
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const newUrl = `${baseUrl}/product/${handle}`;
+      
+      try {
+        window.parent.postMessage(
+          { type: 'navigate', url: newUrl },
+          '*'
+        );
+      } catch (error) {
+        console.log('Cannot send message to parent');
+      }
+      
+      // Naviguer dans l'iframe
+      window.location.href = newUrl;
+    } else {
+      // En localhost ou standalone, utiliser le router Next.js (navigation client-side)
+      router.push(`/product/${handle}`);
+    }
+  };
+
   return (
     <section id="collection" className="py-32 px-12 bg-black relative overflow-hidden">
       <div className="absolute top-1/2 left-0 -translate-y-1/2 font-['Dela_Gothic_One',sans-serif] text-[clamp(12rem,40vw,30rem)] text-white/5 pointer-events-none whitespace-nowrap">
@@ -51,9 +83,10 @@ export default function Collection({ productsByType, productTypes }: CollectionP
                     const productUrl = product.handle ? `/product/${product.handle}` : '#';
                     
                     return (
-                    <a
+                    <Link
                       key={product.id}
                       href={productUrl}
+                      onClick={(e) => handleProductClick(e, product.handle)}
                       className="group relative aspect-[3/4] bg-[#111111] overflow-hidden transition-all duration-500 hover:-translate-y-2.5 block"
                       data-hover
                     >
@@ -101,7 +134,7 @@ export default function Collection({ productsByType, productTypes }: CollectionP
                       <div className="absolute bottom-6 left-6 text-[0.5rem] tracking-[0.15em] text-[#666666] uppercase transition-opacity duration-300 group-hover:opacity-0">
                         {type}
                       </div>
-                    </a>
+                    </Link>
                     );
                   })}
                 </div>
