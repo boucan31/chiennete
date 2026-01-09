@@ -22,12 +22,12 @@ export default function Navigation() {
   return (
     <nav className="fixed top-0 left-0 w-full px-12 py-6 flex justify-between items-center z-[1000] mix-blend-difference">
       <a href="/" className="font-['Dela_Gothic_One',sans-serif] text-2xl tracking-[0.15em] text-white no-underline relative">
-        LC
+        La Chienneté
         <span className="absolute top-0 -right-6 text-xs">®</span>
       </a>
       
       <div className="hidden md:flex items-center gap-4">
-        <span className="text-[0.6rem] tracking-[0.2em] text-[#666666]">PARIS</span>
+        <span className="text-sm tracking-[0.2em] text-white font-medium">Saint-Jacques</span>
         <span className="font-['IBM_Plex_Mono',monospace] text-sm bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">{time}</span>
       </div>
 
