@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 
 interface ProductImageGalleryProps {
@@ -12,6 +12,9 @@ interface ProductImageGalleryProps {
 
 export default function ProductImageGallery({ images }: ProductImageGalleryProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLDivElement>(null);
 
   if (!images || images.length === 0) {
     return null;
@@ -19,16 +22,45 @@ export default function ProductImageGallery({ images }: ProductImageGalleryProps
 
   const mainImage = images[selectedImageIndex];
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current || !isZoomed) return;
+
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    setZoomPosition({ x, y });
+  };
+
+  const handleMouseEnter = () => {
+    setIsZoomed(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomed(false);
+  };
+
   return (
     <div className="space-y-4">
-      {/* Image principale */}
+      {/* Image principale avec zoom */}
       {mainImage && (
-        <div className="aspect-square relative bg-[#111111] overflow-hidden">
+        <div
+          ref={imageRef}
+          className="aspect-square relative bg-[#111111] overflow-hidden cursor-zoom-in"
+          onMouseMove={handleMouseMove}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <Image
             src={mainImage.src}
             alt={mainImage.alt}
             fill
-            className="object-cover"
+            className={`object-cover transition-transform duration-300 ${
+              isZoomed ? 'scale-150' : 'scale-100'
+            }`}
+            style={{
+              transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+            }}
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
           />
