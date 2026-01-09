@@ -31,7 +31,7 @@ export default function ImageCarousel() {
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentIndex ? 'opacity-10' : 'opacity-0'
+              index === currentIndex ? 'opacity-30' : 'opacity-0'
             }`}
           >
             <Image

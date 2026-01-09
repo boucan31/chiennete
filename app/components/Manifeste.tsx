@@ -15,7 +15,7 @@ export default function Manifeste() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="relative aspect-square max-w-[400px] mx-auto lg:mx-0">
+          <div className="relative aspect-square max-w-[400px] mx-auto lg:mx-0 bg-transparent">
             <div className="absolute inset-8 border opacity-20" style={{ borderImage: 'linear-gradient(to right, #00FF00, #FFFF00) 1' }}></div>
             <div className="absolute inset-4 border border-white/5"></div>
             <div className="absolute inset-0">
@@ -46,7 +46,7 @@ export default function Manifeste() {
               Chaque pièce est pensée à Paris, produite en France, limitée en quantité. <strong className="text-white font-semibold">Pas de restock. Pas de seconde chance. Tu l&apos;as ou tu l&apos;as pas.</strong>
             </p>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-12 pt-12 border-t border-white/10">
+            {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-12 pt-12 border-t border-white/10">
               <div>
                 <div className="font-['Dela_Gothic_One',sans-serif] text-[clamp(2rem,4vw,3.5rem)] leading-none bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">08</div>
                 <div className="text-[0.55rem] tracking-[0.15em] text-[#666666] uppercase mt-2">Pièces uniques</div>
@@ -63,7 +63,7 @@ export default function Manifeste() {
                 <div className="font-['Dela_Gothic_One',sans-serif] text-[clamp(2rem,4vw,3.5rem)] leading-none bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">∞</div>
                 <div className="text-[0.55rem] tracking-[0.15em] text-[#666666] uppercase mt-2">Attitude</div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
