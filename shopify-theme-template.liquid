@@ -53,10 +53,44 @@
   {% endif %}
   
   <iframe 
+    id="app-iframe"
     src="{{ full_url }}"
-    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 9999999;"
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 9999999; background: #000;"
     allowfullscreen
   ></iframe>
+  
+  {% comment %} 
+    content_for_layout est requis par Shopify mais on le masque avec CSS
+    car on affiche uniquement l'iframe
+  {% endcomment %}
+  <div style="display: none !important; visibility: hidden !important;">
+    {{ content_for_layout }}
+  </div>
+  
+  <script>
+    // Vérifier que l'iframe charge
+    const iframe = document.getElementById('app-iframe');
+    let loadTimeout;
+    
+    iframe.addEventListener('load', function() {
+      console.log('✅ Iframe chargée:', '{{ full_url }}');
+      clearTimeout(loadTimeout);
+    });
+    
+    iframe.addEventListener('error', function() {
+      console.error('❌ Erreur de chargement de l\'iframe');
+      document.body.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: white; font-family: monospace;"><div>Erreur: Impossible de charger l\'application.<br>URL: {{ full_url }}</div></div>';
+    });
+    
+    // Timeout après 10 secondes
+    loadTimeout = setTimeout(function() {
+      if (!iframe.contentDocument || iframe.contentDocument.readyState !== 'complete') {
+        console.warn('⚠️ L\'iframe prend trop de temps à charger');
+      }
+    }, 10000);
+    
+    console.log('Shopify Theme - Chargement de:', '{{ full_url }}');
+  </script>
 </body>
 </html>
 

@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <title>{% if template.name == 'index' %}LA CHIENNETÉ{% else %}{{ page_title }}{% endif %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  {{ content_for_header }}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    iframe { border: none; }
+  </style>
+</head>
+<body>
+  {% assign app_url = 'https://chiennete-production.up.railway.app' %}
+  {% assign template_param = template.name %}
+  {% assign handle_param = '' %}
+  
+  {% if template.name == 'product' %}
+    {% assign handle_param = product.handle %}
+  {% elsif template.name == 'article' %}
+    {% assign handle_param = article.handle %}
+  {% endif %}
+  
+  {% if handle_param != '' %}
+    {% assign full_url = app_url | append: '?shopify_template=' | append: template_param | append: '&shopify_handle=' | append: handle_param %}
+  {% else %}
+    {% assign full_url = app_url | append: '?shopify_template=' | append: template_param %}
+  {% endif %}
+  
+  <iframe 
+    src="{{ full_url }}"
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 9999999; background: #000;"
+    allowfullscreen
+  ></iframe>
+  
+  <div style="display: none !important;">{{ content_for_layout }}</div>
+</body>
+</html>
+
