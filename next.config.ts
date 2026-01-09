@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   // Railway automatically sets PORT, but we can also use it explicitly
-  output: 'standalone', // Optimized for Railway deployment
+  // Retiré: output: 'standalone' - cause des problèmes avec Railway (next start ne fonctionne pas avec standalone)
   
   // Allow images from Shopify
   images: {
