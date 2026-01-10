@@ -15,6 +15,8 @@ const splashImages = [
   '/images/PHOTO-2025-12-28-15-29-42 4.jpg',
 ];
 
+const SPLASH_SEEN_KEY = 'la_chiennete_splash_seen';
+
 export default function Loader() {
   const [progress, setProgress] = useState(0);
   const [isHidden, setIsHidden] = useState(false);
@@ -30,6 +32,55 @@ export default function Loader() {
       setIsHidden(true);
       return;
     }
+
+    // Détecter si c'est un retour arrière ou si le splash a déjà été vu dans cette session
+    const checkBackNavigation = () => {
+      if (typeof window === 'undefined') return true;
+
+      // Vérifier si le splash a déjà été vu dans cette session
+      // Cette vérification fonctionne pour les retours arrière car sessionStorage persiste
+      if (sessionStorage.getItem(SPLASH_SEEN_KEY) === 'true') {
+        return true;
+      }
+
+      // Détecter les retours arrière via Navigation Timing API (chargement initial uniquement)
+      try {
+        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        if (navigation) {
+          // Type 'back_forward' indique une navigation arrière/avant (full page reload)
+          if (navigation.type === 'back_forward') {
+            // Marquer comme vu pour éviter de le réafficher
+            sessionStorage.setItem(SPLASH_SEEN_KEY, 'true');
+            return true;
+          }
+        }
+      } catch (e) {
+        // Fallback pour les navigateurs qui ne supportent pas Navigation Timing API
+        // Vérifier via performance.navigation (legacy API)
+        try {
+          const perfNav = (performance as any).navigation;
+          if (perfNav && (perfNav.type === 2 || perfNav.type === 'back_forward')) {
+            // Type 2 = back_forward
+            sessionStorage.setItem(SPLASH_SEEN_KEY, 'true');
+            return true;
+          }
+        } catch (err) {
+          // Ignorer les erreurs
+        }
+      }
+
+      return false;
+    };
+
+    // Si c'est un retour arrière ou déjà vu, masquer immédiatement
+    if (checkBackNavigation()) {
+      setIsHidden(true);
+      return;
+    }
+
+    // Marquer que le splash a été vu dans cette session
+    // Cela empêchera l'affichage lors des retours arrière (client-side navigation)
+    sessionStorage.setItem(SPLASH_SEEN_KEY, 'true');
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -54,7 +105,7 @@ export default function Loader() {
     }, 30);
 
     return () => clearInterval(interval);
-  }, [shouldHideLoader]);
+  }, [shouldHideLoader, pathname]);
 
   if (isHidden || shouldHideLoader) return null;
 
