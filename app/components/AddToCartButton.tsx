@@ -44,19 +44,38 @@ export default function AddToCartButton({ variantId, productTitle }: AddToCartBu
 
       // Déclencher les événements pour ouvrir et rafraîchir le panier
       if (typeof window !== 'undefined') {
+        // Détecter si on est dans un iframe (Shopify)
+        const isInIframe = window.self !== window.top;
+        
         // D'abord ouvrir le panier
         window.dispatchEvent(new CustomEvent('openCart'));
         
-        // Puis déclencher cartUpdated après un délai pour :
-        // 1. Laisser le panier s'ouvrir complètement
-        // 2. Laisser Shopify mettre à jour le panier côté serveur
-        // Augmenter le délai pour s'assurer que Shopify a bien synchronisé
-        setTimeout(() => {
-          console.log('Dispatching cartUpdated event with cartId:', data.cartId);
-          window.dispatchEvent(new CustomEvent('cartUpdated', { 
-            detail: { cartId: data.cartId } 
-          }));
-        }, 800);
+        if (isInIframe) {
+          // Dans un iframe (Shopify), utiliser des délais plus longs
+          // car Shopify peut prendre plus de temps à synchroniser
+          setTimeout(() => {
+            console.log('Dispatching cartUpdated event with cartId (iframe):', data.cartId);
+            window.dispatchEvent(new CustomEvent('cartUpdated', { 
+              detail: { cartId: data.cartId } 
+            }));
+          }, 1000);
+          
+          // Une deuxième tentative après un délai plus long
+          setTimeout(() => {
+            console.log('Second cartUpdated event dispatch (iframe):', data.cartId);
+            window.dispatchEvent(new CustomEvent('cartUpdated', { 
+              detail: { cartId: data.cartId } 
+            }));
+          }, 2500);
+        } else {
+          // En standalone, un seul appel suffit
+          setTimeout(() => {
+            console.log('Dispatching cartUpdated event with cartId (standalone):', data.cartId);
+            window.dispatchEvent(new CustomEvent('cartUpdated', { 
+              detail: { cartId: data.cartId } 
+            }));
+          }, 500);
+        }
       }
 
       // Afficher un message (ne plus rediriger automatiquement vers checkout)

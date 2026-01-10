@@ -29,7 +29,15 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/cart/get?cartId=${encodeURIComponent(cartId)}`);
+      // Ajouter un timestamp pour éviter le cache, surtout dans un iframe
+      const timestamp = Date.now();
+      const response = await fetch(`/api/cart/get?cartId=${encodeURIComponent(cartId)}&_t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -86,12 +94,30 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   useEffect(() => {
     const handleCartUpdate = () => {
       console.log('cartUpdated event received, isOpen:', isOpen);
-      // Si le panier est ouvert, le rafraîchir après un délai pour laisser le temps à Shopify de mettre à jour
+      // Si le panier est ouvert, le rafraîchir
       if (isOpen) {
         console.log('Refreshing cart after cartUpdated event...');
-        setTimeout(() => {
-          fetchCart();
-        }, 300);
+        
+        // Détecter si on est dans un iframe
+        const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+        
+        if (isInIframe) {
+          // Dans un iframe, utiliser plusieurs tentatives avec des délais plus longs
+          setTimeout(() => {
+            console.log('First refresh attempt after cartUpdated (iframe)');
+            fetchCart();
+          }, 600);
+          
+          setTimeout(() => {
+            console.log('Second refresh attempt after cartUpdated (iframe)');
+            fetchCart();
+          }, 1500);
+        } else {
+          // En standalone, un seul appel suffit
+          setTimeout(() => {
+            fetchCart();
+          }, 300);
+        }
       }
     };
 
@@ -103,18 +129,49 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     };
   }, [isOpen, fetchCart]);
 
-  // Rafraîchir le panier quand il s'ouvre
+  // Rafraîchir le panier quand il s'ouvre avec plusieurs tentatives pour s'assurer que ça fonctionne même dans un iframe
   useEffect(() => {
     if (isOpen) {
       console.log('Cart opened, fetching cart data...');
-      // Utiliser un délai pour s'assurer que le panier est bien monté
-      const timer = setTimeout(() => {
-        fetchCart();
-      }, 200);
       
-      return () => {
-        clearTimeout(timer);
-      };
+      // Détecter si on est dans un iframe
+      const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+      
+      let timers: NodeJS.Timeout[] = [];
+      
+      if (isInIframe) {
+        // Dans un iframe, utiliser plusieurs tentatives avec des délais plus longs
+        // pour s'assurer que Shopify a bien synchronisé le panier
+        timers.push(setTimeout(() => {
+          console.log('First fetch attempt (iframe context)');
+          fetchCart();
+        }, 500));
+        
+        timers.push(setTimeout(() => {
+          console.log('Second fetch attempt (iframe context)');
+          fetchCart();
+        }, 1500));
+        
+        // Ajouter un polling périodique pour garder le panier à jour dans un iframe
+        const pollInterval = setInterval(() => {
+          console.log('Periodic cart refresh (iframe)');
+          fetchCart();
+        }, 3000); // Rafraîchir toutes les 3 secondes quand le panier est ouvert dans un iframe
+        
+        return () => {
+          timers.forEach(timer => clearTimeout(timer));
+          clearInterval(pollInterval);
+        };
+      } else {
+        // En standalone, un seul appel suffit
+        timers.push(setTimeout(() => {
+          fetchCart();
+        }, 200));
+        
+        return () => {
+          timers.forEach(timer => clearTimeout(timer));
+        };
+      }
     }
   }, [isOpen, fetchCart]);
 
