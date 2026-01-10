@@ -42,15 +42,13 @@ export default function AddToCartButton({ variantId, productTitle }: AddToCartBu
         localStorage.setItem('shopify_cart_id', data.cartId);
       }
 
-      // Rediriger vers le checkout ou afficher un message
-      if (data.checkoutUrl) {
-        setMessage('✅ Ajouté au panier ! Redirection...');
-        setTimeout(() => {
-          window.open(data.checkoutUrl, '_blank');
-        }, 500);
-      } else {
-        setMessage('✅ Ajouté au panier !');
+      // Déclencher l'événement cartUpdated pour rafraîchir le panier
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cartUpdated'));
       }
+
+      // Afficher un message (ne plus rediriger automatiquement vers checkout)
+      setMessage('✅ Ajouté au panier !');
     } catch (error) {
       console.error('Error adding to cart:', error);
       setMessage(error instanceof Error ? error.message : 'Erreur lors de l\'ajout au panier');

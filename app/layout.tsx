@@ -29,9 +29,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Loader />
-        <VisualEffects />
-        {children}
+        <div id="main-content" className="transition-all duration-300 ease-in-out">
+          <Loader />
+          <VisualEffects />
+          {children}
+        </div>
       </body>
     </html>
   );

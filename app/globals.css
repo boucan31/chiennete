@@ -335,3 +335,21 @@ a, button {
 .shadow-afrique {
   box-shadow: 0 4px 6px -1px rgba(245, 124, 0, 0.3), 0 2px 4px -1px rgba(245, 124, 0, 0.2);
 }
+
+/* Cart sidebar - content resizing */
+#main-content {
+  width: 100%;
+  transition: width 0.3s ease-in-out;
+  overflow-x: hidden;
+}
+
+body.cart-open #main-content {
+  width: calc(100% - 500px);
+}
+
+@media (max-width: 768px) {
+  body.cart-open #main-content {
+    width: 0;
+    overflow: hidden;
+  }
+}

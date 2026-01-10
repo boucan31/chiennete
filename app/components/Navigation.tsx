@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import CartSidebar from './CartSidebar';
 
 export default function Navigation() {
   const [time, setTime] = useState('00:00');
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -51,15 +53,13 @@ export default function Navigation() {
           </a>
         </li>
         <li>
-          <a 
-            href={process.env.NEXT_PUBLIC_SHOPIFY_CART_URL || (process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ? `https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN}/cart` : 'https://lachienneteofficiel.fr/cart')} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-white no-underline text-[0.65rem] tracking-[0.2em] uppercase flex items-center gap-3 transition-all hover:bg-gradient-to-r hover:from-green-500 hover:to-yellow-500 hover:bg-clip-text hover:text-transparent"
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="text-white bg-transparent border-none cursor-pointer text-[0.65rem] tracking-[0.2em] uppercase flex items-center gap-3 transition-all hover:bg-gradient-to-r hover:from-green-500 hover:to-yellow-500 hover:bg-clip-text hover:text-transparent p-0 font-inherit"
           >
             <span className="text-[#666666] text-[0.6rem]">04</span>
             <span>Panier</span>
-          </a>
+          </button>
         </li>
       </ul>
 
@@ -68,6 +68,8 @@ export default function Navigation() {
         <span className="w-6 h-0.5 bg-white transition-all"></span>
         <span className="w-6 h-0.5 bg-white transition-all"></span>
       </button>
+
+      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
   );
 }
