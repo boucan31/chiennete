@@ -30,17 +30,53 @@ export async function POST(request: Request) {
     const result = await addToCart(currentCartId, variantId, quantity);
 
     if (!result.success) {
+      // Vérifier si l'erreur indique que l'article est épuisé
+      const errorMessage = result.error || 'Failed to add to cart';
+      const unavailableKeywords = [
+        'unavailable',
+        'not available',
+        'out of stock',
+        'sold out',
+        'not found',
+        'does not exist',
+        'invalid',
+        'épuisé',
+        'indisponible',
+        'n\'existe pas',
+        'introuvable',
+        'article épuisé'
+      ];
+      
+      const isUnavailable = unavailableKeywords.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
       return NextResponse.json(
-        { error: result.error || 'Failed to add to cart' },
-        { status: 500 }
+        { 
+          success: false,
+          error: isUnavailable ? 'article épuisé' : errorMessage
+        },
+        { status: isUnavailable ? 404 : 500 }
       );
     }
 
-    return NextResponse.json({
+    // Construire la réponse avec les données disponibles
+    const responseData: any = {
       success: true,
       cartId: currentCartId,
-      checkoutUrl: result.checkoutUrl,
-    });
+    };
+
+    // Ajouter le panier seulement s'il est présent
+    if (result.cart) {
+      responseData.cart = result.cart;
+    }
+
+    // Ajouter l'URL de checkout seulement si elle est présente
+    if (result.checkoutUrl) {
+      responseData.checkoutUrl = result.checkoutUrl;
+    }
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Error in cart add API route:', error);
     return NextResponse.json(

@@ -13,6 +13,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cartKey, setCartKey] = useState(0); // Clé pour forcer le re-render
   const isFetchingRef = useRef(false);
 
   const fetchCart = useCallback(async () => {
@@ -53,8 +54,24 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
       // S'assurer que les données sont valides avant de mettre à jour
       if (data.cart) {
-        setCart(data.cart);
+        // Forcer une nouvelle référence pour que React détecte le changement
+        const cartData = JSON.parse(JSON.stringify(data.cart));
+        console.log('Setting cart data:', {
+          totalQuantity: cartData.totalQuantity,
+          linesCount: cartData.lines?.edges?.length || 0,
+          totalAmount: cartData.cost?.totalAmount?.amount,
+          lines: cartData.lines?.edges?.map((e: any) => ({
+            id: e.node?.id,
+            quantity: e.node?.quantity,
+            price: e.node?.merchandise?.price?.amount,
+            cost: e.node?.cost?.totalAmount?.amount,
+          })),
+        });
+        setCart(cartData);
+        // Incrémenter la clé pour forcer le re-render
+        setCartKey(prev => prev + 1);
       } else {
+        console.warn('No cart data received');
         setCart(null);
       }
     } catch (err) {
@@ -84,14 +101,36 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   useEffect(() => {
     let refreshTimer: NodeJS.Timeout | null = null;
     
-    const handleCartUpdate = () => {
-      // Si le panier est ouvert, le rafraîchir après un délai
+    const handleCartUpdate = (event: Event) => {
+      // Si le panier est ouvert, le rafraîchir
       if (isOpen) {
         // Annuler le timer précédent s'il existe pour éviter les rafraîchissements multiples
         if (refreshTimer) {
           clearTimeout(refreshTimer);
         }
         
+        // Vérifier si le panier est directement fourni dans l'événement (plus rapide)
+        const customEvent = event as CustomEvent;
+        if (customEvent.detail?.cart) {
+          // Forcer une nouvelle référence pour que React détecte le changement
+          const cartData = JSON.parse(JSON.stringify(customEvent.detail.cart));
+          console.log('Received cart directly from event:', {
+            totalQuantity: cartData.totalQuantity,
+            linesCount: cartData.lines?.edges?.length || 0,
+            totalAmount: cartData.cost?.totalAmount?.amount,
+            firstLineQuantity: cartData.lines?.edges?.[0]?.node?.quantity,
+            firstLinePrice: cartData.lines?.edges?.[0]?.node?.merchandise?.price?.amount,
+          });
+          // Utiliser directement le panier reçu sans faire d'appel API
+          setCart(cartData);
+          // Incrémenter la clé pour forcer le re-render
+          setCartKey(prev => prev + 1);
+          setLoading(false);
+          isFetchingRef.current = false;
+          return;
+        }
+        
+        // Sinon, récupérer le panier via API
         // Détecter si on est dans un iframe
         const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
         
@@ -105,10 +144,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     };
 
     // Ajouter l'écouteur d'événement
-    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
     
     return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
       if (refreshTimer) {
         clearTimeout(refreshTimer);
       }
@@ -133,6 +172,21 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       };
     }
   }, [isOpen, fetchCart]);
+
+  // Debug: surveiller les changements du panier
+  useEffect(() => {
+    if (cart) {
+      console.log('Cart state updated:', {
+        totalQuantity: cart.totalQuantity,
+        totalAmount: cart.cost?.totalAmount?.amount,
+        lines: cart.lines?.edges?.map((e: any) => ({
+          quantity: e.node?.quantity,
+          price: e.node?.merchandise?.price?.amount,
+          cost: e.node?.cost?.totalAmount?.amount,
+        })),
+      });
+    }
+  }, [cart]);
 
   const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
     const cartId = typeof window !== 'undefined' ? localStorage.getItem('shopify_cart_id') : null;
@@ -160,9 +214,51 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         throw new Error(data.error || 'Erreur lors de la mise à jour');
       }
 
-      setCart(data.cart);
+      // Mettre à jour immédiatement avec les données reçues
+      if (data.cart) {
+        // Forcer une nouvelle référence pour que React détecte le changement
+        const cartData = JSON.parse(JSON.stringify(data.cart));
+        
+        // Log détaillé pour déboguer
+        const updatedLine = cartData.lines?.edges?.find((e: any) => e.node?.id === lineId)?.node;
+        console.log('Updated cart from handleUpdateQuantity:', {
+          totalQuantity: cartData.totalQuantity,
+          lineId,
+          lineQuantity: updatedLine?.quantity,
+          linePrice: updatedLine?.merchandise?.price?.amount,
+          lineCost: updatedLine?.cost?.totalAmount?.amount,
+          hasPrice: !!updatedLine?.merchandise?.price?.amount,
+          hasCost: !!updatedLine?.cost?.totalAmount?.amount,
+          cartStructure: {
+            hasLines: !!cartData.lines,
+            hasEdges: !!cartData.lines?.edges,
+            edgesLength: cartData.lines?.edges?.length || 0,
+          },
+        });
+        
+        // Mettre à jour le state immédiatement
+        setCart(cartData);
+        setCartKey(prev => prev + 1);
+        
+        // Si on est dans un iframe, faire un refresh après un délai pour synchroniser
+        const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+        if (isInIframe) {
+          // Dans un iframe, attendre un peu plus longtemps pour laisser Shopify synchroniser
+          setTimeout(() => {
+            fetchCart();
+          }, 1500);
+        }
+      } else {
+        // Si pas de cart dans la réponse, récupérer le panier complet
+        console.warn('No cart in update response, fetching full cart');
+        const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+        const delay = isInIframe ? 1000 : 400;
+        setTimeout(() => {
+          fetchCart();
+        }, delay);
+      }
       
-      // Déclencher l'événement cartUpdated
+      // Déclencher l'événement cartUpdated pour synchroniser avec d'autres composants
       window.dispatchEvent(new Event('cartUpdated'));
     } catch (err) {
       console.error('Error updating quantity:', err);
@@ -197,12 +293,30 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         throw new Error(data.error || 'Erreur lors de la suppression');
       }
 
-      setCart(data.cart);
+      // Forcer une nouvelle référence pour que React détecte le changement
+      if (data.cart) {
+        const cartData = JSON.parse(JSON.stringify(data.cart));
+        console.log('Updated cart from handleRemoveItem:', {
+          totalQuantity: cartData.totalQuantity,
+          linesCount: cartData.lines?.edges?.length || 0,
+        });
+        setCart(cartData);
+        setCartKey(prev => prev + 1);
+      }
       
       // Si le panier est vide, supprimer le cartId du localStorage
       if (data.cart && data.cart.totalQuantity === 0) {
         localStorage.removeItem('shopify_cart_id');
       }
+      
+      // Rafraîchir le panier pour être sûr d'avoir les données les plus récentes
+      // Détecter si on est dans un iframe
+      const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
+      const delay = isInIframe ? 1000 : 400;
+      
+      setTimeout(() => {
+        fetchCart();
+      }, delay);
 
       // Déclencher l'événement cartUpdated
       window.dispatchEvent(new Event('cartUpdated'));
@@ -321,7 +435,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           )}
 
           {!loading && cart && cart.totalQuantity > 0 && (
-            <div className="p-6 space-y-6">
+            <div key={`cart-content-${cartKey}`} className="p-6 space-y-6">
               {cart.lines && cart.lines.edges && cart.lines.edges.length > 0 ? (
                 cart.lines.edges.map(({ node: line }) => (
                 <div
@@ -356,7 +470,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         {getVariantTitle(line)}
                       </p>
                     )}
-                    <p className="font-['IBM_Plex_Mono',monospace] text-sm text-white mb-3">
+                    <p 
+                      key={`price-${line.id}-${line.merchandise?.price?.amount}-${cartKey}`}
+                      className="font-['IBM_Plex_Mono',monospace] text-sm text-white mb-3"
+                    >
                       {line.merchandise?.price?.amount 
                         ? formatPrice(line.merchandise.price.amount, line.merchandise.price.currencyCode)
                         : 'Prix non disponible'}
@@ -366,14 +483,17 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     <div className="flex items-center gap-3 mb-3">
                       <button
                         onClick={() => handleUpdateQuantity(line.id, (line.quantity || 1) - 1)}
-                        disabled={loading}
+                        disabled={loading || isFetchingRef.current}
                         className="w-8 h-8 border border-[#2a2a2a] text-white hover:border-[#666666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-['IBM_Plex_Mono',monospace] text-sm"
                         aria-label="Réduire la quantité"
                       >
                         −
                       </button>
-                      <span className="font-['IBM_Plex_Mono',monospace] text-sm text-white min-w-[2rem] text-center">
-                        {line.quantity || 0}
+                      <span 
+                        key={`quantity-${line.id}-${line.quantity}-${cartKey}`}
+                        className="font-['IBM_Plex_Mono',monospace] text-sm text-white min-w-[2rem] text-center"
+                      >
+                        {line.quantity ?? 0}
                       </span>
                       <button
                         onClick={() => handleUpdateQuantity(line.id, line.quantity + 1)}
@@ -397,7 +517,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
                   {/* Total per line */}
                   <div className="text-right flex-shrink-0">
-                    <p className="font-['IBM_Plex_Mono',monospace] text-sm text-white">
+                    <p 
+                      key={`total-${line.id}-${line.cost?.totalAmount?.amount}-${line.quantity}-${cartKey}`}
+                      className="font-['IBM_Plex_Mono',monospace] text-sm text-white"
+                    >
                       {line.cost?.totalAmount?.amount
                         ? formatPrice(line.cost.totalAmount.amount, line.cost.totalAmount.currencyCode)
                         : 'N/A'}
@@ -423,8 +546,13 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <span className="font-['IBM_Plex_Mono',monospace] text-sm text-[#666666] uppercase tracking-wider">
                 Total
               </span>
-              <span className="font-['Dela_Gothic_One',sans-serif] text-xl text-white">
-                {formatPrice(cart.cost.totalAmount.amount, cart.cost.totalAmount.currencyCode)}
+              <span 
+                key={`cart-total-${cart.cost?.totalAmount?.amount}-${cart.totalQuantity}-${cartKey}`}
+                className="font-['Dela_Gothic_One',sans-serif] text-xl text-white"
+              >
+                {cart.cost?.totalAmount?.amount
+                  ? formatPrice(cart.cost.totalAmount.amount, cart.cost.totalAmount.currencyCode)
+                  : 'N/A'}
               </span>
             </div>
             <button

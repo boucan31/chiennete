@@ -24,10 +24,34 @@ export async function POST(request: Request) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error || 'Failed to update cart' },
+        { 
+          success: false,
+          error: result.error || 'Failed to update cart' 
+        },
         { status: 500 }
       );
     }
+
+    // S'assurer que le panier est présent
+    if (!result.cart) {
+      console.error('Cart not returned from updateCartLine:', result);
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Cart not returned from update' 
+        },
+        { status: 500 }
+      );
+    }
+
+    // Log pour déboguer
+    console.log('Update API returning cart:', {
+      totalQuantity: result.cart.totalQuantity,
+      linesCount: result.cart.lines?.edges?.length || 0,
+      firstLineQuantity: result.cart.lines?.edges?.[0]?.node?.quantity,
+      firstLinePrice: result.cart.lines?.edges?.[0]?.node?.merchandise?.price?.amount,
+      firstLineCost: result.cart.lines?.edges?.[0]?.node?.cost?.totalAmount?.amount,
+    });
 
     return NextResponse.json({
       success: true,

@@ -98,8 +98,27 @@ export async function createCart(): Promise<{ cartId: string; checkoutUrl: strin
 
     const data = await response.json();
 
-    if (data.errors || data.data.cartCreate.userErrors.length > 0) {
-      console.error('Shopify GraphQL errors:', data.errors || data.data.cartCreate.userErrors);
+    // Vérifier les erreurs GraphQL
+    if (data.errors) {
+      console.error('Shopify GraphQL errors:', data.errors);
+      return null;
+    }
+
+    // Vérifier si la mutation a réussi
+    if (!data.data || !data.data.cartCreate) {
+      console.error('Réponse invalide de Shopify:', data);
+      return null;
+    }
+
+    // Vérifier les erreurs utilisateur
+    if (data.data.cartCreate.userErrors && data.data.cartCreate.userErrors.length > 0) {
+      console.error('Shopify user errors:', data.data.cartCreate.userErrors);
+      return null;
+    }
+
+    // Vérifier que le panier est présent
+    if (!data.data.cartCreate.cart) {
+      console.error('Panier non retourné par Shopify:', data.data);
       return null;
     }
 
@@ -118,7 +137,7 @@ export async function addToCart(
   cartId: string,
   variantId: string,
   quantity: number = 1
-): Promise<{ success: boolean; checkoutUrl?: string; error?: string }> {
+): Promise<{ success: boolean; cart?: Cart; checkoutUrl?: string; error?: string }> {
   if (!SHOPIFY_STORE_DOMAIN || !SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
     return { success: false, error: 'Shopify credentials not configured' };
   }
@@ -130,6 +149,52 @@ export async function addToCart(
           cart {
             id
             checkoutUrl
+            totalQuantity
+            cost {
+              totalAmount {
+                amount
+                currencyCode
+              }
+            }
+            lines(first: 250) {
+              edges {
+                node {
+                  id
+                  quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id
+                      product {
+                        title
+                        handle
+                        images(first: 1) {
+                          edges {
+                            node {
+                              url
+                              altText
+                            }
+                          }
+                        }
+                      }
+                      selectedOptions {
+                        name
+                        value
+                      }
+                      price {
+                        amount
+                        currencyCode
+                      }
+                    }
+                  }
+                  cost {
+                    totalAmount {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+            }
           }
           userErrors {
             field
@@ -167,17 +232,87 @@ export async function addToCart(
 
     const data = await response.json();
 
-    if (data.errors || data.data.cartLinesAdd.userErrors.length > 0) {
-      const errors = data.errors || data.data.cartLinesAdd.userErrors;
-      console.error('Shopify GraphQL errors:', errors);
+    // Vérifier les erreurs GraphQL
+    if (data.errors) {
+      console.error('Shopify GraphQL errors:', data.errors);
+      const errorMessage = data.errors[0]?.message || '';
+      
+      // Vérifier si l'erreur indique que l'article est épuisé ou n'existe pas
+      const unavailableKeywords = [
+        'unavailable',
+        'not available',
+        'out of stock',
+        'sold out',
+        'not found',
+        'does not exist',
+        'invalid',
+        'épuisé',
+        'indisponible',
+        'n\'existe pas',
+        'introuvable'
+      ];
+      
+      const isUnavailable = unavailableKeywords.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
       return {
         success: false,
-        error: errors[0]?.message || 'Erreur lors de l\'ajout au panier',
+        error: isUnavailable ? 'article épuisé' : errorMessage || 'Erreur lors de l\'ajout au panier',
+      };
+    }
+
+    // Vérifier si la mutation a réussi
+    if (!data.data || !data.data.cartLinesAdd) {
+      console.error('Réponse invalide de Shopify:', data);
+      return {
+        success: false,
+        error: 'Réponse invalide de Shopify',
+      };
+    }
+
+    // Vérifier les erreurs utilisateur
+    if (data.data.cartLinesAdd.userErrors && data.data.cartLinesAdd.userErrors.length > 0) {
+      console.error('Shopify user errors:', data.data.cartLinesAdd.userErrors);
+      const errorMessage = data.data.cartLinesAdd.userErrors[0]?.message || '';
+      
+      // Vérifier si l'erreur indique que l'article est épuisé ou n'existe pas
+      const unavailableKeywords = [
+        'unavailable',
+        'not available',
+        'out of stock',
+        'sold out',
+        'not found',
+        'does not exist',
+        'invalid',
+        'épuisé',
+        'indisponible',
+        'n\'existe pas',
+        'introuvable'
+      ];
+      
+      const isUnavailable = unavailableKeywords.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
+      return {
+        success: false,
+        error: isUnavailable ? 'article épuisé' : errorMessage || 'Erreur lors de l\'ajout au panier',
+      };
+    }
+
+    // Vérifier que le panier est présent
+    if (!data.data.cartLinesAdd.cart) {
+      console.error('Panier non retourné par Shopify:', data.data);
+      return {
+        success: false,
+        error: 'Panier non retourné par Shopify',
       };
     }
 
     return {
       success: true,
+      cart: data.data.cartLinesAdd.cart,
       checkoutUrl: data.data.cartLinesAdd.cart.checkoutUrl,
     };
   } catch (error) {
@@ -394,14 +529,72 @@ export async function updateCartLine(
 
     const data = await response.json();
 
-    if (data.errors || data.data.cartLinesUpdate.userErrors.length > 0) {
-      const errors = data.errors || data.data.cartLinesUpdate.userErrors;
-      console.error('Shopify GraphQL errors:', errors);
+    // Vérifier les erreurs GraphQL
+    if (data.errors) {
+      console.error('Shopify GraphQL errors:', data.errors);
       return {
         success: false,
-        error: errors[0]?.message || 'Erreur lors de la mise à jour du panier',
+        error: data.errors[0]?.message || 'Erreur lors de la mise à jour du panier',
       };
     }
+
+    // Vérifier si la mutation a réussi
+    if (!data.data || !data.data.cartLinesUpdate) {
+      console.error('Réponse invalide de Shopify:', data);
+      return {
+        success: false,
+        error: 'Réponse invalide de Shopify',
+      };
+    }
+
+    // Vérifier les erreurs utilisateur
+    if (data.data.cartLinesUpdate.userErrors && data.data.cartLinesUpdate.userErrors.length > 0) {
+      console.error('Shopify user errors:', data.data.cartLinesUpdate.userErrors);
+      const errorMessage = data.data.cartLinesUpdate.userErrors[0]?.message || '';
+      
+      // Vérifier si l'erreur indique que l'article est épuisé ou n'existe pas
+      const unavailableKeywords = [
+        'unavailable',
+        'not available',
+        'out of stock',
+        'sold out',
+        'not found',
+        'does not exist',
+        'invalid',
+        'épuisé',
+        'indisponible',
+        'n\'existe pas',
+        'introuvable'
+      ];
+      
+      const isUnavailable = unavailableKeywords.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
+      return {
+        success: false,
+        error: isUnavailable ? 'article épuisé' : errorMessage || 'Erreur lors de la mise à jour du panier',
+      };
+    }
+
+    // Vérifier que le panier est présent
+    if (!data.data.cartLinesUpdate.cart) {
+      console.error('Panier non retourné par Shopify:', data.data);
+      return {
+        success: false,
+        error: 'Panier non retourné par Shopify',
+      };
+    }
+
+    console.log('Cart updated successfully:', {
+      totalQuantity: data.data.cartLinesUpdate.cart.totalQuantity,
+      linesCount: data.data.cartLinesUpdate.cart.lines?.edges?.length || 0,
+      firstLine: data.data.cartLinesUpdate.cart.lines?.edges?.[0]?.node ? {
+        quantity: data.data.cartLinesUpdate.cart.lines.edges[0].node.quantity,
+        price: data.data.cartLinesUpdate.cart.lines.edges[0].node.merchandise?.price?.amount,
+        cost: data.data.cartLinesUpdate.cart.lines.edges[0].node.cost?.totalAmount?.amount,
+      } : null,
+    });
 
     return {
       success: true,
@@ -510,12 +703,61 @@ export async function removeCartLine(
 
     const data = await response.json();
 
-    if (data.errors || data.data.cartLinesRemove.userErrors.length > 0) {
-      const errors = data.errors || data.data.cartLinesRemove.userErrors;
-      console.error('Shopify GraphQL errors:', errors);
+    // Vérifier les erreurs GraphQL
+    if (data.errors) {
+      console.error('Shopify GraphQL errors:', data.errors);
+      const errorMessage = data.errors[0]?.message || '';
+      
+      const unavailableKeywords = [
+        'unavailable',
+        'not available',
+        'out of stock',
+        'sold out',
+        'not found',
+        'does not exist',
+        'invalid',
+        'épuisé',
+        'indisponible',
+        'n\'existe pas',
+        'introuvable'
+      ];
+      
+      const isUnavailable = unavailableKeywords.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
       return {
         success: false,
-        error: errors[0]?.message || 'Erreur lors de la suppression du panier',
+        error: isUnavailable ? 'article épuisé' : errorMessage || 'Erreur lors de la suppression du panier',
+      };
+    }
+
+    // Vérifier les erreurs utilisateur
+    if (data.data?.cartLinesRemove?.userErrors && data.data.cartLinesRemove.userErrors.length > 0) {
+      console.error('Shopify user errors:', data.data.cartLinesRemove.userErrors);
+      const errorMessage = data.data.cartLinesRemove.userErrors[0]?.message || '';
+      
+      const unavailableKeywords = [
+        'unavailable',
+        'not available',
+        'out of stock',
+        'sold out',
+        'not found',
+        'does not exist',
+        'invalid',
+        'épuisé',
+        'indisponible',
+        'n\'existe pas',
+        'introuvable'
+      ];
+      
+      const isUnavailable = unavailableKeywords.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
+      return {
+        success: false,
+        error: isUnavailable ? 'article épuisé' : errorMessage || 'Erreur lors de la suppression du panier',
       };
     }
 
