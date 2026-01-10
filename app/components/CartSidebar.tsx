@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Cart, CartLine } from '@/lib/shopify-cart';
 
@@ -13,8 +13,14 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isFetchingRef = useRef(false);
 
   const fetchCart = useCallback(async () => {
+    // Éviter les appels multiples simultanés
+    if (isFetchingRef.current) {
+      return;
+    }
+
     // Toujours lire le cartId depuis localStorage au moment de l'appel
     // pour s'assurer d'avoir la dernière valeur
     const cartId = typeof window !== 'undefined' ? localStorage.getItem('shopify_cart_id') : null;
@@ -25,6 +31,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       return;
     }
 
+    isFetchingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -46,26 +53,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
       // S'assurer que les données sont valides avant de mettre à jour
       if (data.cart) {
-        console.log('Cart data received:', JSON.stringify(data.cart, null, 2));
-        console.log('Cart lines edges:', data.cart.lines?.edges);
-        console.log('Cart totalQuantity:', data.cart.totalQuantity);
-        console.log('Cart cost:', data.cart.cost);
-        
-        // Vérifier que les lignes existent et ont des données
-        if (data.cart.lines?.edges && data.cart.lines.edges.length > 0) {
-          data.cart.lines.edges.forEach((edge: any, index: number) => {
-            console.log(`Line ${index}:`, {
-              id: edge.node?.id,
-              quantity: edge.node?.quantity,
-              price: edge.node?.merchandise?.price,
-              cost: edge.node?.cost,
-            });
-          });
-        }
-        
         setCart(data.cart);
       } else {
-        console.warn('No cart data in response:', data);
         setCart(null);
       }
     } catch (err) {
@@ -74,6 +63,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       setCart(null);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
   }, []);
 
@@ -92,32 +82,25 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
   // Écouter l'événement cartUpdated pour rafraîchir le panier
   useEffect(() => {
+    let refreshTimer: NodeJS.Timeout | null = null;
+    
     const handleCartUpdate = () => {
-      console.log('cartUpdated event received, isOpen:', isOpen);
-      // Si le panier est ouvert, le rafraîchir
+      // Si le panier est ouvert, le rafraîchir après un délai
       if (isOpen) {
-        console.log('Refreshing cart after cartUpdated event...');
+        // Annuler le timer précédent s'il existe pour éviter les rafraîchissements multiples
+        if (refreshTimer) {
+          clearTimeout(refreshTimer);
+        }
         
         // Détecter si on est dans un iframe
         const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
         
-        if (isInIframe) {
-          // Dans un iframe, utiliser plusieurs tentatives avec des délais plus longs
-          setTimeout(() => {
-            console.log('First refresh attempt after cartUpdated (iframe)');
-            fetchCart();
-          }, 600);
-          
-          setTimeout(() => {
-            console.log('Second refresh attempt after cartUpdated (iframe)');
-            fetchCart();
-          }, 1500);
-        } else {
-          // En standalone, un seul appel suffit
-          setTimeout(() => {
-            fetchCart();
-          }, 300);
-        }
+        // Dans un iframe, attendre un peu plus longtemps pour laisser Shopify synchroniser
+        const delay = isInIframe ? 1000 : 400;
+        
+        refreshTimer = setTimeout(() => {
+          fetchCart();
+        }, delay);
       }
     };
 
@@ -126,52 +109,28 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
     };
   }, [isOpen, fetchCart]);
 
-  // Rafraîchir le panier quand il s'ouvre avec plusieurs tentatives pour s'assurer que ça fonctionne même dans un iframe
+  // Rafraîchir le panier quand il s'ouvre
   useEffect(() => {
     if (isOpen) {
-      console.log('Cart opened, fetching cart data...');
-      
       // Détecter si on est dans un iframe
       const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
       
-      let timers: NodeJS.Timeout[] = [];
+      // Dans un iframe, attendre un peu plus longtemps pour laisser Shopify synchroniser
+      const delay = isInIframe ? 800 : 200;
       
-      if (isInIframe) {
-        // Dans un iframe, utiliser plusieurs tentatives avec des délais plus longs
-        // pour s'assurer que Shopify a bien synchronisé le panier
-        timers.push(setTimeout(() => {
-          console.log('First fetch attempt (iframe context)');
-          fetchCart();
-        }, 500));
-        
-        timers.push(setTimeout(() => {
-          console.log('Second fetch attempt (iframe context)');
-          fetchCart();
-        }, 1500));
-        
-        // Ajouter un polling périodique pour garder le panier à jour dans un iframe
-        const pollInterval = setInterval(() => {
-          console.log('Periodic cart refresh (iframe)');
-          fetchCart();
-        }, 3000); // Rafraîchir toutes les 3 secondes quand le panier est ouvert dans un iframe
-        
-        return () => {
-          timers.forEach(timer => clearTimeout(timer));
-          clearInterval(pollInterval);
-        };
-      } else {
-        // En standalone, un seul appel suffit
-        timers.push(setTimeout(() => {
-          fetchCart();
-        }, 200));
-        
-        return () => {
-          timers.forEach(timer => clearTimeout(timer));
-        };
-      }
+      const timer = setTimeout(() => {
+        fetchCart();
+      }, delay);
+      
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, [isOpen, fetchCart]);
 
@@ -364,12 +323,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           {!loading && cart && cart.totalQuantity > 0 && (
             <div className="p-6 space-y-6">
               {cart.lines && cart.lines.edges && cart.lines.edges.length > 0 ? (
-                cart.lines.edges.map(({ node: line }) => {
-                  // Debug: vérifier que les données sont présentes
-                  if (!line.quantity || !line.merchandise?.price?.amount) {
-                    console.warn('Line data incomplete:', line);
-                  }
-                  return (
+                cart.lines.edges.map(({ node: line }) => (
                 <div
                   key={line.id}
                   className="flex gap-4 pb-6 border-b border-[#2a2a2a] last:border-0"
@@ -450,8 +404,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     </p>
                   </div>
                 </div>
-                  );
-                })
+                ))
               ) : (
                 <div className="p-6 text-center">
                   <p className="text-[#666666] font-['IBM_Plex_Mono',monospace] text-sm">

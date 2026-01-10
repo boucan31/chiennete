@@ -50,32 +50,15 @@ export default function AddToCartButton({ variantId, productTitle }: AddToCartBu
         // D'abord ouvrir le panier
         window.dispatchEvent(new CustomEvent('openCart'));
         
-        if (isInIframe) {
-          // Dans un iframe (Shopify), utiliser des délais plus longs
-          // car Shopify peut prendre plus de temps à synchroniser
-          setTimeout(() => {
-            console.log('Dispatching cartUpdated event with cartId (iframe):', data.cartId);
-            window.dispatchEvent(new CustomEvent('cartUpdated', { 
-              detail: { cartId: data.cartId } 
-            }));
-          }, 1000);
-          
-          // Une deuxième tentative après un délai plus long
-          setTimeout(() => {
-            console.log('Second cartUpdated event dispatch (iframe):', data.cartId);
-            window.dispatchEvent(new CustomEvent('cartUpdated', { 
-              detail: { cartId: data.cartId } 
-            }));
-          }, 2500);
-        } else {
-          // En standalone, un seul appel suffit
-          setTimeout(() => {
-            console.log('Dispatching cartUpdated event with cartId (standalone):', data.cartId);
-            window.dispatchEvent(new CustomEvent('cartUpdated', { 
-              detail: { cartId: data.cartId } 
-            }));
-          }, 500);
-        }
+        // Attendre que le panier s'ouvre avant de déclencher cartUpdated
+        // Dans un iframe, attendre un peu plus longtemps pour laisser Shopify synchroniser
+        const delay = isInIframe ? 1200 : 600;
+        
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('cartUpdated', { 
+            detail: { cartId: data.cartId } 
+          }));
+        }, delay);
       }
 
       // Afficher un message (ne plus rediriger automatiquement vers checkout)
