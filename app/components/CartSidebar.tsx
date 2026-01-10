@@ -15,10 +15,13 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchCart = useCallback(async () => {
+    // Toujours lire le cartId depuis localStorage au moment de l'appel
+    // pour s'assurer d'avoir la dernière valeur
     const cartId = typeof window !== 'undefined' ? localStorage.getItem('shopify_cart_id') : null;
     
     if (!cartId) {
       setCart(null);
+      setLoading(false);
       return;
     }
 
@@ -26,14 +29,37 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/cart/get?cartId=${cartId}`);
+      const response = await fetch(`/api/cart/get?cartId=${encodeURIComponent(cartId)}`);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Erreur lors de la récupération du panier');
       }
 
-      setCart(data.cart);
+      // S'assurer que les données sont valides avant de mettre à jour
+      if (data.cart) {
+        console.log('Cart data received:', JSON.stringify(data.cart, null, 2));
+        console.log('Cart lines edges:', data.cart.lines?.edges);
+        console.log('Cart totalQuantity:', data.cart.totalQuantity);
+        console.log('Cart cost:', data.cart.cost);
+        
+        // Vérifier que les lignes existent et ont des données
+        if (data.cart.lines?.edges && data.cart.lines.edges.length > 0) {
+          data.cart.lines.edges.forEach((edge: any, index: number) => {
+            console.log(`Line ${index}:`, {
+              id: edge.node?.id,
+              quantity: edge.node?.quantity,
+              price: edge.node?.merchandise?.price,
+              cost: edge.node?.cost,
+            });
+          });
+        }
+        
+        setCart(data.cart);
+      } else {
+        console.warn('No cart data in response:', data);
+        setCart(null);
+      }
     } catch (err) {
       console.error('Error fetching cart:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
@@ -42,12 +68,6 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchCart();
-    }
-  }, [isOpen, fetchCart]);
 
   // Ajouter/retirer la classe au body pour pousser le contenu
   useEffect(() => {
@@ -62,17 +82,41 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     };
   }, [isOpen]);
 
-  // Écouter l'événement cartUpdated
+  // Écouter l'événement cartUpdated pour rafraîchir le panier
   useEffect(() => {
     const handleCartUpdate = () => {
-      fetchCart();
+      console.log('cartUpdated event received, isOpen:', isOpen);
+      // Si le panier est ouvert, le rafraîchir après un délai pour laisser le temps à Shopify de mettre à jour
+      if (isOpen) {
+        console.log('Refreshing cart after cartUpdated event...');
+        setTimeout(() => {
+          fetchCart();
+        }, 300);
+      }
     };
 
+    // Ajouter l'écouteur d'événement
     window.addEventListener('cartUpdated', handleCartUpdate);
+    
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
     };
-  }, [fetchCart]);
+  }, [isOpen, fetchCart]);
+
+  // Rafraîchir le panier quand il s'ouvre
+  useEffect(() => {
+    if (isOpen) {
+      console.log('Cart opened, fetching cart data...');
+      // Utiliser un délai pour s'assurer que le panier est bien monté
+      const timer = setTimeout(() => {
+        fetchCart();
+      }, 200);
+      
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [isOpen, fetchCart]);
 
   const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
     const cartId = typeof window !== 'undefined' ? localStorage.getItem('shopify_cart_id') : null;
@@ -160,8 +204,14 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     }
   };
 
-  const formatPrice = (amount: string, currencyCode: string) => {
+  const formatPrice = (amount: string | undefined, currencyCode: string | undefined) => {
+    if (!amount || !currencyCode) {
+      return 'N/A';
+    }
     const price = parseFloat(amount);
+    if (isNaN(price)) {
+      return 'N/A';
+    }
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: currencyCode,
@@ -256,7 +306,13 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
           {!loading && cart && cart.totalQuantity > 0 && (
             <div className="p-6 space-y-6">
-              {cart.lines.edges.map(({ node: line }) => (
+              {cart.lines && cart.lines.edges && cart.lines.edges.length > 0 ? (
+                cart.lines.edges.map(({ node: line }) => {
+                  // Debug: vérifier que les données sont présentes
+                  if (!line.quantity || !line.merchandise?.price?.amount) {
+                    console.warn('Line data incomplete:', line);
+                  }
+                  return (
                 <div
                   key={line.id}
                   className="flex gap-4 pb-6 border-b border-[#2a2a2a] last:border-0"
@@ -290,13 +346,15 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       </p>
                     )}
                     <p className="font-['IBM_Plex_Mono',monospace] text-sm text-white mb-3">
-                      {formatPrice(line.merchandise.price.amount, line.merchandise.price.currencyCode)}
+                      {line.merchandise?.price?.amount 
+                        ? formatPrice(line.merchandise.price.amount, line.merchandise.price.currencyCode)
+                        : 'Prix non disponible'}
                     </p>
 
                     {/* Quantity controls */}
                     <div className="flex items-center gap-3 mb-3">
                       <button
-                        onClick={() => handleUpdateQuantity(line.id, line.quantity - 1)}
+                        onClick={() => handleUpdateQuantity(line.id, (line.quantity || 1) - 1)}
                         disabled={loading}
                         className="w-8 h-8 border border-[#2a2a2a] text-white hover:border-[#666666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-['IBM_Plex_Mono',monospace] text-sm"
                         aria-label="Réduire la quantité"
@@ -304,7 +362,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         −
                       </button>
                       <span className="font-['IBM_Plex_Mono',monospace] text-sm text-white min-w-[2rem] text-center">
-                        {line.quantity}
+                        {line.quantity || 0}
                       </span>
                       <button
                         onClick={() => handleUpdateQuantity(line.id, line.quantity + 1)}
@@ -329,11 +387,21 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   {/* Total per line */}
                   <div className="text-right flex-shrink-0">
                     <p className="font-['IBM_Plex_Mono',monospace] text-sm text-white">
-                      {formatPrice(line.cost.totalAmount.amount, line.cost.totalAmount.currencyCode)}
+                      {line.cost?.totalAmount?.amount
+                        ? formatPrice(line.cost.totalAmount.amount, line.cost.totalAmount.currencyCode)
+                        : 'N/A'}
                     </p>
                   </div>
                 </div>
-              ))}
+                  );
+                })
+              ) : (
+                <div className="p-6 text-center">
+                  <p className="text-[#666666] font-['IBM_Plex_Mono',monospace] text-sm">
+                    Aucun article dans le panier
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

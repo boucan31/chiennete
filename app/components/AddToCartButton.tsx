@@ -42,9 +42,21 @@ export default function AddToCartButton({ variantId, productTitle }: AddToCartBu
         localStorage.setItem('shopify_cart_id', data.cartId);
       }
 
-      // Déclencher l'événement cartUpdated pour rafraîchir le panier
+      // Déclencher les événements pour ouvrir et rafraîchir le panier
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('cartUpdated'));
+        // D'abord ouvrir le panier
+        window.dispatchEvent(new CustomEvent('openCart'));
+        
+        // Puis déclencher cartUpdated après un délai pour :
+        // 1. Laisser le panier s'ouvrir complètement
+        // 2. Laisser Shopify mettre à jour le panier côté serveur
+        // Augmenter le délai pour s'assurer que Shopify a bien synchronisé
+        setTimeout(() => {
+          console.log('Dispatching cartUpdated event with cartId:', data.cartId);
+          window.dispatchEvent(new CustomEvent('cartUpdated', { 
+            detail: { cartId: data.cartId } 
+          }));
+        }, 800);
       }
 
       // Afficher un message (ne plus rediriger automatiquement vers checkout)
