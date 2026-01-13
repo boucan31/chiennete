@@ -33,15 +33,9 @@ export default function Loader() {
       return;
     }
 
-    // Détecter si c'est un retour arrière ou si le splash a déjà été vu dans cette session
+    // Détecter si c'est un retour arrière (navigation back/forward) - uniquement pour full page reload
     const checkBackNavigation = () => {
-      if (typeof window === 'undefined') return true;
-
-      // Vérifier si le splash a déjà été vu dans cette session
-      // Cette vérification fonctionne pour les retours arrière car sessionStorage persiste
-      if (sessionStorage.getItem(SPLASH_SEEN_KEY) === 'true') {
-        return true;
-      }
+      if (typeof window === 'undefined') return false;
 
       // Détecter les retours arrière via Navigation Timing API (chargement initial uniquement)
       try {
@@ -49,8 +43,6 @@ export default function Loader() {
         if (navigation) {
           // Type 'back_forward' indique une navigation arrière/avant (full page reload)
           if (navigation.type === 'back_forward') {
-            // Marquer comme vu pour éviter de le réafficher
-            sessionStorage.setItem(SPLASH_SEEN_KEY, 'true');
             return true;
           }
         }
@@ -61,7 +53,6 @@ export default function Loader() {
           const perfNav = (performance as any).navigation;
           if (perfNav && (perfNav.type === 2 || perfNav.type === 'back_forward')) {
             // Type 2 = back_forward
-            sessionStorage.setItem(SPLASH_SEEN_KEY, 'true');
             return true;
           }
         } catch (err) {
@@ -72,15 +63,18 @@ export default function Loader() {
       return false;
     };
 
-    // Si c'est un retour arrière ou déjà vu, masquer immédiatement
+    // Si c'est un retour arrière (full page reload), masquer immédiatement
     if (checkBackNavigation()) {
       setIsHidden(true);
       return;
     }
 
-    // Marquer que le splash a été vu dans cette session
-    // Cela empêchera l'affichage lors des retours arrière (client-side navigation)
-    sessionStorage.setItem(SPLASH_SEEN_KEY, 'true');
+    // Pour les navigations client-side, écouter l'événement popstate (retour arrière)
+    const handlePopState = () => {
+      setIsHidden(true);
+    };
+
+    window.addEventListener('popstate', handlePopState);
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -104,7 +98,10 @@ export default function Loader() {
       });
     }, 30);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [shouldHideLoader, pathname]);
 
   if (isHidden || shouldHideLoader) return null;

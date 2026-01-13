@@ -47,6 +47,14 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Curseur normal sur mobile */
+@media (max-width: 768px) {
+  body,
+  body * {
+    cursor: auto !important;
+  }
+}
+
 /* Font classes */
 .font-heading {
   font-family: var(--font-heading);

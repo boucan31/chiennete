@@ -5,8 +5,39 @@ import { useEffect, useState } from 'react';
 export default function CustomCursor() {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isActive, setIsActive] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Détecter si on est sur mobile
+    const checkMobile = () => {
+      // Vérifier la largeur de l'écran et la présence d'un pointeur tactile
+      const isMobileDevice = 
+        window.innerWidth <= 768 || 
+        ('ontouchstart' in window) || 
+        (navigator.maxTouchPoints > 0) ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      setIsMobile(isMobileDevice);
+      return isMobileDevice;
+    };
+
+    // Vérifier immédiatement si on est sur mobile
+    const isMobileDevice = checkMobile();
+    
+    // Si on est sur mobile, ne pas initialiser le curseur personnalisé
+    if (isMobileDevice) {
+      return;
+    }
+
+    // Réécouter les changements de taille de fenêtre
+    const handleResize = () => {
+      const mobile = checkMobile();
+      // Si on passe en mode mobile, on ne fait rien de plus
+      // Le cleanup se chargera de retirer les event listeners
+    };
+    
+    window.addEventListener('resize', handleResize);
+
     const updateCursor = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
     };
@@ -23,6 +54,7 @@ export default function CustomCursor() {
     });
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       document.removeEventListener('mousemove', updateCursor);
       hoverElements.forEach((el) => {
         el.removeEventListener('mouseenter', handleMouseEnter);
@@ -30,6 +62,11 @@ export default function CustomCursor() {
       });
     };
   }, []);
+
+  // Ne pas afficher le curseur personnalisé sur mobile
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <>
