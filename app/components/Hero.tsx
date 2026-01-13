@@ -17,8 +17,6 @@ export default function Hero() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[150px] h-[150px] top-[15%] left-[10%] border opacity-15 animate-spin" style={{ animationDuration: '25s', borderImage: 'linear-gradient(to right, #00FF00, #FFFF00) 1' }}></div>
         <div className="absolute w-[200px] h-[200px] bottom-[20%] right-[10%] border border-[#FF0033] opacity-15 animate-spin" style={{ animationDuration: '35s', animationDirection: 'reverse' }}></div>
-        <div className="absolute w-2 h-2 top-[30%] right-[25%] animate-pulse bg-gradient-to-r from-green-500 to-yellow-500"></div>
-        <div className="absolute w-2 h-2 bg-[#FF0033] bottom-[35%] left-[20%] animate-pulse" style={{ animationDelay: '0.5s' }}></div>
       </div>
 
       {/* Side labels */}

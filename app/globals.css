@@ -89,10 +89,33 @@ html {
   border-radius: 0;
 }
 
-/* Selection */
+/* Selection - désactivée (transparente) */
 ::selection {
-  background: var(--acid);
-  color: var(--void);
+  background: transparent;
+  color: inherit;
+}
+
+::-moz-selection {
+  background: transparent;
+  color: inherit;
+}
+
+/* Désactiver la sélection de texte sur tout le site */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Réactiver la sélection sur les champs de saisie et zones de texte */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Smooth transitions for all interactive elements */
