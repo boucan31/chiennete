@@ -33,6 +33,17 @@ export default function Loader() {
       return;
     }
 
+    // Vérifier si le splash a déjà été vu (première visite uniquement)
+    if (typeof window !== 'undefined') {
+      const hasSeenSplash = localStorage.getItem(SPLASH_SEEN_KEY) === 'true';
+      
+      // Si le splash a déjà été vu, ne pas l'afficher
+      if (hasSeenSplash) {
+        setIsHidden(true);
+        return;
+      }
+    }
+
     // Détecter si c'est un retour arrière (navigation back/forward) - uniquement pour full page reload
     const checkBackNavigation = () => {
       if (typeof window === 'undefined') return false;
@@ -66,6 +77,10 @@ export default function Loader() {
     // Si c'est un retour arrière (full page reload), masquer immédiatement
     if (checkBackNavigation()) {
       setIsHidden(true);
+      // Marquer comme vu pour éviter de l'afficher à nouveau
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SPLASH_SEEN_KEY, 'true');
+      }
       return;
     }
 
@@ -91,6 +106,10 @@ export default function Loader() {
           clearInterval(interval);
           setTimeout(() => {
             setIsHidden(true);
+            // Marquer comme vu une fois l'animation terminée
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(SPLASH_SEEN_KEY, 'true');
+            }
           }, 300);
           return 100;
         }
