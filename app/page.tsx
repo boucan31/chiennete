@@ -7,7 +7,6 @@ import Collection from './components/Collection';
 import Join from './components/Join';
 import Footer from './components/Footer';
 import ImageCarousel from './components/ImageCarousel';
-import YouTubeBackground from './components/YouTubeBackground';
 
 export default async function Home() {
   const products = await getProducts();
@@ -26,10 +25,8 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white relative">
-      <YouTubeBackground />
-      <div className="relative z-10">
-        <ImageCarousel />
-        <Navigation />
+      <ImageCarousel />
+      <Navigation />
         
         <Hero />
       
@@ -64,7 +61,6 @@ export default async function Home() {
       <Join />
 
       <Footer />
-      </div>
     </div>
   );
 }
