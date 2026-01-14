@@ -5,9 +5,10 @@ import { useState } from 'react';
 interface AddToCartButtonProps {
   variantId: string;
   productTitle: string;
+  available?: boolean;
 }
 
-export default function AddToCartButton({ variantId, productTitle }: AddToCartButtonProps) {
+export default function AddToCartButton({ variantId, productTitle, available = true }: AddToCartButtonProps) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -137,10 +138,14 @@ export default function AddToCartButton({ variantId, productTitle }: AddToCartBu
     <div className="w-full">
       <button
         onClick={handleAddToCart}
-        disabled={loading}
-        className="w-full bg-gradient-to-r from-green-500 to-yellow-500 text-black font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={loading || !available}
+        className={`w-full font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${
+          available
+            ? 'bg-gradient-to-r from-green-500 to-yellow-500 text-black hover:opacity-90'
+            : 'bg-[#2a2a2a] text-[#666666] cursor-not-allowed'
+        }`}
       >
-        {loading ? 'Ajout en cours...' : 'Ajouter au panier'}
+        {loading ? 'Ajout en cours...' : available ? 'Ajouter au panier' : 'Indisponible'}
       </button>
       {message && (
         <div

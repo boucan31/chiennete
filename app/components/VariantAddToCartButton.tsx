@@ -7,6 +7,7 @@ interface Variant {
   id: string;
   title: string;
   formattedPrice: string;
+  availableForSale?: boolean;
 }
 
 interface VariantAddToCartButtonProps {
@@ -33,11 +34,13 @@ export default function VariantAddToCartButton({
   }, []);
 
   const selectedVariant = variants.find(v => v.id === selectedVariantId) || variants[0];
+  const isAvailable = selectedVariant?.availableForSale !== false;
 
   return (
     <AddToCartButton 
       variantId={selectedVariantId}
       productTitle={selectedVariant.title}
+      available={isAvailable}
     />
   );
 }

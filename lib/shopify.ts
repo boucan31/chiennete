@@ -25,8 +25,10 @@ interface ShopifyProduct {
     formattedPrice: string;
     currencyCode: string;
     title: string;
+    availableForSale: boolean;
   }>;
   onlineStoreUrl?: string;
+  availableForSale?: boolean;
 }
 
 // Using Storefront API (recommended for public product display)
@@ -66,9 +68,11 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
                       currencyCode
                     }
                     title
+                    availableForSale
                   }
                 }
               }
+              availableForSale
               onlineStoreUrl
             }
           }
@@ -135,8 +139,10 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
             }).format(variantPrice),
             currencyCode: variant.node.price.currencyCode,
             title: variant.node.title,
+            availableForSale: variant.node.availableForSale ?? true,
           };
         }),
+        availableForSale: edge.node.availableForSale ?? true,
         onlineStoreUrl: edge.node.onlineStoreUrl,
       };
     });
@@ -228,9 +234,11 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
                   currencyCode
                 }
                 title
+                availableForSale
               }
             }
           }
+          availableForSale
           onlineStoreUrl
         }
       }
@@ -289,8 +297,10 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
           }).format(variantPrice),
           currencyCode: variant.node.price.currencyCode,
           title: variant.node.title,
+          availableForSale: variant.node.availableForSale ?? true,
         };
       }),
+      availableForSale: product.availableForSale ?? true,
       onlineStoreUrl: product.onlineStoreUrl,
     };
   } catch (error) {
