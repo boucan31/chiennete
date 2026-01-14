@@ -7,6 +7,7 @@ import Collection from './components/Collection';
 import Join from './components/Join';
 import Footer from './components/Footer';
 import ImageCarousel from './components/ImageCarousel';
+import YouTubeBackground from './components/YouTubeBackground';
 
 export default async function Home() {
   const products = await getProducts();
@@ -25,10 +26,12 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white relative">
-      <ImageCarousel />
-      <Navigation />
-      
-      <Hero />
+      <YouTubeBackground />
+      <div className="relative z-10">
+        <ImageCarousel />
+        <Navigation />
+        
+        <Hero />
       
       {/* Double Marquee Section */}
       <section className="py-20 bg-[#111111] overflow-hidden">
@@ -61,6 +64,7 @@ export default async function Home() {
       <Join />
 
       <Footer />
+      </div>
     </div>
   );
 }

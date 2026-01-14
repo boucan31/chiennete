@@ -4,14 +4,42 @@ import { useState } from 'react';
 
 export default function Join() {
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+
+    try {
+      const response = await fetch('/api/join', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'envoi');
+      }
+
+      setSubmitted(true);
       (e.target as HTMLFormElement).reset();
-    }, 2500);
+      
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 2500);
+    } catch (err) {
+      setError('Erreur lors de l\'envoi. Veuillez réessayer.');
+      console.error('Error submitting email:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,22 +77,28 @@ export default function Join() {
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-[500px] mx-auto mb-6">
           <input
             type="email"
+            name="email"
             placeholder="ton@email.com"
             required
-            className="flex-1 px-6 py-5 bg-black border-2 border-black text-white font-['IBM_Plex_Mono',monospace] text-sm tracking-[0.05em] outline-none transition-all focus:border-green-500 focus:border-yellow-500"
+            disabled={isLoading || submitted}
+            className="flex-1 px-6 py-5 bg-black border-2 border-black text-white font-['IBM_Plex_Mono',monospace] text-sm tracking-[0.05em] outline-none transition-all focus:border-green-500 focus:border-yellow-500 disabled:opacity-50"
             style={{ borderImage: 'linear-gradient(to right, transparent, transparent) 1' }}
           />
           <button
             type="submit"
-            className={`px-8 py-5 font-['Dela_Gothic_One',sans-serif] text-lg tracking-[0.05em] cursor-pointer transition-all duration-300 ${
+            disabled={isLoading || submitted}
+            className={`px-8 py-5 font-['Dela_Gothic_One',sans-serif] text-lg tracking-[0.05em] cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
               submitted
                 ? 'bg-[#FF0033] text-white'
                 : 'bg-gradient-to-r from-green-500 to-yellow-500 text-black hover:bg-[#FF0033] hover:text-white hover:-skew-x-[5deg]'
             }`}
           >
-            {submitted ? '✓ BIENVENUE' : "J'Y SUIS →"}
+            {isLoading ? 'ENVOI...' : submitted ? '✓ BIENVENUE' : "J'Y SUIS →"}
           </button>
         </form>
+        {error && (
+          <p className="text-red-500 text-sm mt-2">{error}</p>
+        )}
 
         <p className="text-[0.65rem] text-[#666666] tracking-[0.1em] mb-12">
           +2,847 membres dans la meute — Zéro bullshit garanti
