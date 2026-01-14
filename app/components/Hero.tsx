@@ -48,10 +48,10 @@ export default function Hero() {
           <strong className="text-white font-medium">Du streetwear brut, authentique.</strong>
         </p>
 
-        <div className="flex flex-wrap gap-4 justify-center mt-10">
+        <div className="flex flex-wrap gap-4 justify-center mt-10 relative z-0">
           <a
             href="#join"
-            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-gradient-to-r from-green-500 to-yellow-500 text-black transition-all duration-400 relative overflow-hidden group"
+            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-gradient-to-r from-green-500 to-yellow-500 text-black transition-all duration-400 relative overflow-hidden group z-0"
           >
             <span className="relative z-10">Rejoindre la meute</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10">
@@ -61,7 +61,7 @@ export default function Hero() {
           </a>
           <a
             href="#collection"
-            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-transparent text-white border-2 border-white transition-all duration-400 hover:bg-white hover:text-black hover:skew-x-[-5deg]"
+            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-transparent text-white border-2 border-white transition-all duration-400 hover:bg-white hover:text-black hover:skew-x-[-5deg] relative z-0"
           >
             <span>Voir le drop</span>
           </a>
