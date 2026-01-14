@@ -2,7 +2,7 @@
 
 export default function YouTubeBackground() {
   const videoId = '1HwKXR-BLjA';
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&mute=1&controls=0&playlist=${videoId}&playsinline=1&rel=0&modestbranding=1`;
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&mute=1&controls=0&playlist=${videoId}&playsinline=1&rel=0&modestbranding=1&start=15`;
 
   return (
     <div className="fixed inset-0 z-[5] pointer-events-none">
