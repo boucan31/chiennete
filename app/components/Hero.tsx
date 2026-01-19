@@ -47,24 +47,6 @@ export default function Hero() {
           Pas de compromis. Pas d&apos;excuses.<br />
           <strong className="text-white font-medium">Du streetwear brut, authentique.</strong>
         </p>
-
-        <div className="flex flex-wrap gap-4 justify-center mt-10 relative z-0">
-          <a
-            href="#join"
-            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-white text-black border-2 border-white transition-all duration-400 hover:opacity-90 hover:skew-x-[-5deg] relative z-0"
-          >
-            <span>Rejoindre la meute</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-          <a
-            href="#drop"
-            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-white text-black border-2 border-white transition-all duration-400 hover:opacity-90 hover:skew-x-[-5deg] relative z-0"
-          >
-            <span>Voir le drop</span>
-          </a>
-        </div>
       </div>
 
       {/* Scroll indicator */}
