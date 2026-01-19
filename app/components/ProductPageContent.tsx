@@ -64,20 +64,13 @@ export default function ProductPageContent({ initialProduct }: ProductPageConten
       <div className="flex flex-col justify-center">
         <div className="mb-6">
           <span className="font-['IBM_Plex_Mono',monospace] text-sm bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">
-            {currentProduct.vendor || 'La Chienneté'}
+            La Chienneté
           </span>
         </div>
         
         <h1 className="font-['Dela_Gothic_One',sans-serif] text-4xl md:text-5xl mb-6">
           {currentProduct.title}
         </h1>
-
-        {currentProduct.description && (
-          <div 
-            className="text-[#999999] mb-8 prose prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: currentProduct.description }}
-          />
-        )}
 
         {currentProduct.variants.length > 0 && (
           <ProductColorSizeSelector 
