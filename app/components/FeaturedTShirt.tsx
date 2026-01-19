@@ -262,7 +262,7 @@ export default function FeaturedTShirt({ initialProduct }: FeaturedTShirtProps) 
         {/* Image principale */}
         {currentProduct && (
           <Link href={`/product/${currentProduct.handle}`} className="block">
-            <div className="aspect-square relative bg-[#111111] overflow-hidden mb-8 cursor-pointer hover:opacity-90 transition-opacity">
+            <div className="aspect-square relative bg-transparent overflow-hidden mb-8 cursor-pointer hover:opacity-90 transition-opacity">
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
@@ -282,7 +282,7 @@ export default function FeaturedTShirt({ initialProduct }: FeaturedTShirtProps) 
           </Link>
         )}
         {!currentProduct && (
-          <div className="aspect-square relative bg-[#111111] overflow-hidden mb-8">
+          <div className="aspect-square relative bg-transparent overflow-hidden mb-8">
             {isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
