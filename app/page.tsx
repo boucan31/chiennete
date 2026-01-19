@@ -20,7 +20,8 @@ export default async function Home() {
       {/* Background image */}
       <div className="fixed inset-0 z-0">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
+          id="background-image"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 transition-opacity duration-300"
           style={{
             backgroundImage: 'url(/images/fondecran.jpeg)',
           }}
@@ -30,10 +31,10 @@ export default async function Home() {
       
       <Navigation />
         
-        <Hero />
+      <Hero />
 
       {/* Drop Section */}
-      <section id="drop" className="relative bg-[#111111] z-10">
+      <section id="drop" className="relative bg-transparent z-10">
         {/* Featured Sweatshirt Section */}
         <FeaturedSweatshirt initialProduct={whiteSweater} />
 

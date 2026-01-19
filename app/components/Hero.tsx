@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export default function Hero() {
   return (
-    <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <section id="acceuil" className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background gradients */}
       <div className="absolute inset-0" style={{
         background: `
