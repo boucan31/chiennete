@@ -1,35 +1,31 @@
 'use client';
 
-interface MarqueeProps {
-  children: React.ReactNode;
-  direction?: 'left' | 'right';
-  speed?: number;
-  className?: string;
-}
-
-export default function Marquee({ children, direction = 'left', speed = 20, className = '' }: MarqueeProps) {
+export default function Marquee() {
   return (
-    <div className={`overflow-hidden ${className}`}>
-      <div
-        className="flex"
-        style={{
-          animation: `marquee ${speed}s linear infinite ${direction === 'right' ? 'reverse' : ''}`,
-        }}
-      >
-        <div className="flex items-center gap-12 px-8 whitespace-nowrap">
-          {children}
-        </div>
-        <div className="flex items-center gap-12 px-8 whitespace-nowrap">
-          {children}
-        </div>
+    <div className="marquee">
+      <div className="marquee-track">
+        <div className="marquee-item">🔥 Store Officiel <span className="dot"></span></div>
+        <div className="marquee-item">💪 Team Nasdas <span className="dot"></span></div>
+        <div className="marquee-item">🐕 La Chienneté <span className="dot"></span></div>
+        <div className="marquee-item">⭐️ Saint-Jacques <span className="dot"></span></div>
+        <div className="marquee-item">✨ Drop 2026 <span className="dot"></span></div>
+        <div className="marquee-item">💯 Premium Quality <span className="dot"></span></div>
+        <div className="marquee-item">🚀 Livraison Express <span className="dot"></span></div>
+        <div className="marquee-item">👑 Édition Limitée <span className="dot"></span></div>
+        <div className="marquee-item">⚡️ Style Unique <span className="dot"></span></div>
+        <div className="marquee-item">🦁 On est ensemble <span className="dot"></span></div>
+        {/* Dupliqué pour boucle infinie */}
+        <div className="marquee-item">🔥 Store Officiel <span className="dot"></span></div>
+        <div className="marquee-item">💪 Team Nasdas <span className="dot"></span></div>
+        <div className="marquee-item">🐕 La Chienneté <span className="dot"></span></div>
+        <div className="marquee-item">⭐️ Saint-Jacques <span className="dot"></span></div>
+        <div className="marquee-item">✨ Drop 2026 <span className="dot"></span></div>
+        <div className="marquee-item">💯 Premium Quality <span className="dot"></span></div>
+        <div className="marquee-item">🚀 Livraison Express <span className="dot"></span></div>
+        <div className="marquee-item">👑 Édition Limitée <span className="dot"></span></div>
+        <div className="marquee-item">⚡️ Style Unique <span className="dot"></span></div>
+        <div className="marquee-item">🦁 On est ensemble <span className="dot"></span></div>
       </div>
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
     </div>
   );
 }
-

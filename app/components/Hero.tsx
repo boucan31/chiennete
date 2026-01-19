@@ -1,6 +1,7 @@
 'use client';
 
 import Marquee from './Marquee';
+import Image from 'next/image';
 
 export default function Hero() {
   return (
@@ -31,17 +32,18 @@ export default function Hero() {
       <div className="text-center z-10 px-4 opacity-0 animate-[fadeUp_1s_ease_2.8s_forwards]">
         
 
-        <h1 className="font-['Dela_Gothic_One',sans-serif] text-[clamp(4rem,18vw,16rem)] leading-[0.85] tracking-[-0.02em] mb-4">
-          <span className="block overflow-hidden">
-            <span className="inline-block animate-[revealUp_1s_cubic-bezier(0.16,1,0.3,1)_3s_forwards] translate-y-full">LA</span>
-          </span>
-          <span className="block overflow-hidden">
-            <span className="inline-block animate-[revealUp_1s_cubic-bezier(0.16,1,0.3,1)_3.15s_forwards] translate-y-full">
-              <span className="text-white">CHIEN</span>
-              <span className="text-white">NETÉ</span>
-            </span>
-          </span>
-        </h1>
+        <div className="mb-4 overflow-hidden">
+          <div className="inline-block animate-[revealUp_1s_cubic-bezier(0.16,1,0.3,1)_3s_forwards] translate-y-full">
+            <Image
+              src="/images/PHOTO-2025-12-28-15-29-42 2.jpg"
+              alt="La Chienneté"
+              width={1200}
+              height={400}
+              className="w-auto h-auto max-w-[clamp(40rem,90vw,80rem)] object-contain"
+              priority
+            />
+          </div>
+        </div>
 
         <p className="font-['Unbounded',sans-serif] text-[clamp(0.8rem,2vw,1rem)] font-normal text-[#999999] max-w-[500px] mx-auto my-8 leading-[1.8] tracking-[0.02em]">
           Pas de compromis. Pas d&apos;excuses.<br />
@@ -56,21 +58,8 @@ export default function Hero() {
       </div>
 
       {/* Bottom Marquee */}
-      <div className="absolute bottom-0 left-0 w-full bg-white py-4 -rotate-1 scale-105 overflow-hidden">
-        <Marquee speed={20}>
-          <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">DROP 001</span>
-          <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-          <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">COMING SOON</span>
-          <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-          <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">LA CHIENNETÉ</span>
-          <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-          <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">PARIS</span>
-          <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-          <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">NO RULES</span>
-          <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-          <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">NO LIMITS</span>
-          <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
-        </Marquee>
+      <div className="absolute bottom-0 left-0 w-full bg-transparent py-4 -rotate-1 scale-105 overflow-hidden">
+        <Marquee />
       </div>
 
       <style jsx>{`

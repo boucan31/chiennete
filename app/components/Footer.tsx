@@ -1,6 +1,7 @@
 'use client';
 
 import Marquee from './Marquee';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -22,8 +23,14 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
           <div>
-            <a href="/" className="font-['Dela_Gothic_One',sans-serif] text-[clamp(2rem,5vw,4rem)] text-black no-underline block mb-6">
-              LA CHIENNETÉ
+            <a href="/" className="block mb-6 transition-opacity duration-300 hover:opacity-80">
+              <Image
+                src="/images/PHOTO-2025-12-28-15-29-42 2.jpg"
+                alt="La Chienneté"
+                width={400}
+                height={160}
+                className="h-auto w-auto max-w-[clamp(16rem,40vw,32rem)] object-contain"
+              />
             </a>
             <p className="text-sm text-black/50 max-w-[350px] leading-[1.8] mb-6">
               Streetwear brutal, authentique, made in France. Pas de compromis. Pas d&apos;excuses.

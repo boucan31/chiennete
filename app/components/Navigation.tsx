@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import CartSidebar from './CartSidebar';
 
 export default function Navigation() {
@@ -48,9 +49,16 @@ export default function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 w-full px-12 py-6 flex justify-between items-center z-[1000] md:mix-blend-difference">
-      <a href="/" className="font-['Dela_Gothic_One',sans-serif] text-2xl tracking-[0.15em] text-white no-underline relative">
-        La Chienneté
-        <span className="absolute top-0 -right-6 text-xs">®</span>
+      <a href="/" className="relative transition-opacity duration-300 hover:opacity-80 flex items-center">
+        <Image
+          src="/images/PHOTO-2025-12-28-15-29-42 2.jpg"
+          alt="La Chienneté"
+          width={240}
+          height={80}
+          className="h-16 w-auto object-contain"
+          priority
+        />
+        <span className="absolute top-0 -right-6 text-xs text-white">®</span>
       </a>
       
       <div className="hidden md:flex items-center gap-4">
