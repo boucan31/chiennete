@@ -23,6 +23,7 @@ interface Variant {
 interface Product {
   id: string;
   title: string;
+  handle: string;
   images: Array<{
     src: string;
     alt: string;
