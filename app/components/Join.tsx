@@ -43,7 +43,7 @@ export default function Join() {
   };
 
   return (
-    <section id="join" className="py-32 px-12 bg-[#111111] relative overflow-hidden">
+    <section id="join" className="pt-20 pb-32 px-12 bg-[#111111] relative overflow-hidden z-10">
       <div className="absolute inset-0" style={{
         background: 'radial-gradient(ellipse at 50% 50%, rgba(0, 255, 0, 0.03) 0%, rgba(255, 255, 0, 0.015) 50%, transparent 60%)'
       }}></div>
@@ -60,8 +60,6 @@ export default function Join() {
           <span className="text-[0.6rem] tracking-[0.3em] text-[#666666] uppercase">Rejoindre</span>
           <span className="w-20 h-px bg-gradient-to-r from-green-500 to-yellow-500"></span>
         </div>
-
-        <div className="text-6xl mb-6 animate-[bounce_2s_ease-in-out_infinite]">🐕</div>
 
         <h2 className="font-['Dela_Gothic_One',sans-serif] text-[clamp(3rem,10vw,7rem)] leading-none mb-6">
           REJOINS LA <span className="relative inline-block">
@@ -87,10 +85,10 @@ export default function Join() {
           <button
             type="submit"
             disabled={isLoading || submitted}
-            className={`px-8 py-5 font-['Dela_Gothic_One',sans-serif] text-lg tracking-[0.05em] cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-8 py-5 font-['Dela_Gothic_One',sans-serif] text-lg tracking-[0.05em] cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-white ${
               submitted
-                ? 'bg-[#FF0033] text-white'
-                : 'bg-gradient-to-r from-green-500 to-yellow-500 text-black hover:bg-[#FF0033] hover:text-white hover:-skew-x-[5deg]'
+                ? 'bg-[#FF0033] text-white border-[#FF0033]'
+                : 'bg-white text-black hover:opacity-90'
             }`}
           >
             {isLoading ? 'ENVOI...' : submitted ? '✓ BIENVENUE' : "J'Y SUIS →"}

@@ -1,62 +1,50 @@
-import { getProducts } from '@/lib/shopify';
+import { getSweaterByColor, getTShirtByColor, getBeanieByColor } from '@/lib/shopify';
 import Marquee from './components/Marquee';
 import Navigation from './components/Navigation';
 import Hero from './components/Hero';
 import Manifeste from './components/Manifeste';
-import Collection from './components/Collection';
 import Join from './components/Join';
 import Footer from './components/Footer';
-import ImageCarousel from './components/ImageCarousel';
+import FeaturedSweatshirt from './components/FeaturedSweatshirt';
+import FeaturedTShirt from './components/FeaturedTShirt';
+import FeaturedBeanie from './components/FeaturedBeanie';
 
 export default async function Home() {
-  const products = await getProducts();
-
-  // Group products by type/category
-  const productsByType = products.reduce((acc: any, product: any) => {
-    const type = product.productType || 'Autres';
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(product);
-    return acc;
-  }, {});
-
-  const productTypes = Object.keys(productsByType);
+  // Charger le produit blanc par défaut
+  const whiteSweater = await getSweaterByColor('blanc');
+  const whiteTShirt = await getTShirtByColor('blanc');
+  const whiteBeanie = await getBeanieByColor('blanc');
 
   return (
     <div className="min-h-screen bg-black text-white relative">
-      <ImageCarousel />
+      {/* Background image */}
+      <div className="fixed inset-0 z-0">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
+          style={{
+            backgroundImage: 'url(/images/fondecran.jpeg)',
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-black/20"></div>
+      </div>
+      
       <Navigation />
         
         <Hero />
-      
-      {/* Double Marquee Section */}
-      <section className="py-20 bg-[#111111] overflow-hidden">
-        <Marquee speed={30} className="mb-4">
-          <span className="font-['Dela_Gothic_One',sans-serif] text-[clamp(4rem,10vw,8rem)] text-white/5 whitespace-nowrap px-8">
-            LA CHIENNETÉ — STREETWEAR BRUTAL — PARIS 2025 —
-          </span>
-        </Marquee>
-        <Marquee speed={40} direction="right" className="mt-4">
-          <span className="font-['Dela_Gothic_One',sans-serif] text-[clamp(4rem,10vw,8rem)] whitespace-nowrap px-8" style={{
-            WebkitTextStroke: '1px',
-            stroke: 'url(#greenYellowGradientStroke)',
-            color: 'transparent',
-          }}>
-            DROP 001 — NO RULES — NO LIMITS — MADE IN FRANCE —
-            <svg className="absolute w-0 h-0">
-              <linearGradient id="greenYellowGradientStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(0, 255, 0, 0.15)" />
-                <stop offset="100%" stopColor="rgba(255, 255, 0, 0.15)" />
-              </linearGradient>
-            </svg>
-          </span>
-        </Marquee>
+
+      {/* Drop Section */}
+      <section id="drop" className="relative bg-[#111111] z-10">
+        {/* Featured Sweatshirt Section */}
+        <FeaturedSweatshirt initialProduct={whiteSweater} />
+
+        {/* Featured T-Shirt Section */}
+        <FeaturedTShirt initialProduct={whiteTShirt} />
+
+        {/* Featured Beanie Section */}
+        <FeaturedBeanie initialProduct={whiteBeanie} />
       </section>
 
       <Manifeste />
-
-      <Collection productsByType={productsByType} productTypes={productTypes} />
 
       <Join />
 

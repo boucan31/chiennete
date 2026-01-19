@@ -4,7 +4,18 @@ import Marquee from './Marquee';
 
 export default function Footer() {
   return (
-    <footer id="contact" className="bg-gradient-to-r from-green-500 to-yellow-500 text-black py-20 px-12 relative overflow-hidden">
+    <footer id="contact" className="text-black py-20 px-12 relative overflow-hidden z-10">
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-65"
+        style={{
+          backgroundImage: 'url(/images/footer.jpeg)',
+        }}
+      ></div>
+      {/* Overlay léger pour améliorer la lisibilité du texte */}
+      <div className="absolute inset-0 bg-black/20"></div>
+      
+      <div className="relative z-10">
       <div className="absolute top-0 right-0 w-20 h-20 border-t-[3px] border-r-[3px] border-black/10"></div>
       <div className="absolute bottom-0 left-0 w-20 h-20 border-b-[3px] border-l-[3px] border-black/10"></div>
 
@@ -70,6 +81,7 @@ export default function Footer() {
             © 2025 LA CHIENNETÉ — TOUS DROITS RÉSERVÉS
           </p>
         </div>
+      </div>
       </div>
     </footer>
   );

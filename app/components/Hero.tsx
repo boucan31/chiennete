@@ -37,8 +37,8 @@ export default function Hero() {
           </span>
           <span className="block overflow-hidden">
             <span className="inline-block animate-[revealUp_1s_cubic-bezier(0.16,1,0.3,1)_3.15s_forwards] translate-y-full">
-              <span className="bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">CHIEN</span>
-              <span className="text-transparent" style={{ WebkitTextStroke: '3px white' }}>NETÉ</span>
+              <span className="text-white">CHIEN</span>
+              <span className="text-white">NETÉ</span>
             </span>
           </span>
         </h1>
@@ -51,17 +51,16 @@ export default function Hero() {
         <div className="flex flex-wrap gap-4 justify-center mt-10 relative z-0">
           <a
             href="#join"
-            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-gradient-to-r from-green-500 to-yellow-500 text-black transition-all duration-400 relative overflow-hidden group z-0"
+            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-white text-black border-2 border-white transition-all duration-400 hover:opacity-90 hover:skew-x-[-5deg] relative z-0"
           >
-            <span className="relative z-10">Rejoindre la meute</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10">
+            <span>Rejoindre la meute</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-            <div className="absolute top-0 left-[-100%] w-full h-full bg-[#FF0033] transition-all duration-400 group-hover:left-0 z-0"></div>
           </a>
           <a
-            href="#collection"
-            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-transparent text-white border-2 border-white transition-all duration-400 hover:bg-white hover:text-black hover:skew-x-[-5deg] relative z-0"
+            href="#drop"
+            className="inline-flex items-center gap-3 px-10 py-5 font-['Unbounded',sans-serif] font-bold text-[0.7rem] tracking-[0.15em] uppercase no-underline bg-white text-black border-2 border-white transition-all duration-400 hover:opacity-90 hover:skew-x-[-5deg] relative z-0"
           >
             <span>Voir le drop</span>
           </a>
@@ -75,7 +74,7 @@ export default function Hero() {
       </div>
 
       {/* Bottom Marquee */}
-      <div className="absolute bottom-0 left-0 w-full bg-gradient-to-r from-green-500 to-yellow-500 py-4 -rotate-1 scale-105 overflow-hidden">
+      <div className="absolute bottom-0 left-0 w-full bg-white py-4 -rotate-1 scale-105 overflow-hidden">
         <Marquee speed={20}>
           <span className="font-['Dela_Gothic_One',sans-serif] text-base text-black tracking-[0.15em]">DROP 001</span>
           <div className="w-1.5 h-1.5 bg-black rounded-full"></div>

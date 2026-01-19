@@ -139,9 +139,9 @@ export default function AddToCartButton({ variantId, productTitle, available = t
       <button
         onClick={handleAddToCart}
         disabled={loading || !available}
-        className={`w-full font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
           available
-            ? 'bg-gradient-to-r from-green-500 to-yellow-500 text-black hover:opacity-90'
+            ? 'bg-white text-black border-2 border-white hover:opacity-90'
             : 'bg-[#2a2a2a] text-[#666666] cursor-not-allowed'
         }`}
       >

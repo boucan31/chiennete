@@ -774,3 +774,147 @@ export async function removeCartLine(
   }
 }
 
+
+// Vider complètement le panier
+export async function clearCart(
+  cartId: string
+): Promise<{ success: boolean; cart?: Cart; error?: string }> {
+  if (!SHOPIFY_STORE_DOMAIN || !SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
+    return { success: false, error: 'Shopify credentials not configured' };
+  }
+
+  try {
+    // D'abord récupérer le panier pour obtenir tous les lineIds
+    const cart = await getCart(cartId);
+    if (!cart) {
+      // Le panier n'existe pas ou a été supprimé
+      return {
+        success: false,
+        error: 'Panier introuvable',
+      };
+    }
+
+    if (!cart.lines || !cart.lines.edges || cart.lines.edges.length === 0) {
+      // Le panier est déjà vide
+      return {
+        success: true,
+        cart: cart,
+      };
+    }
+
+    // Extraire tous les lineIds
+    const lineIds = cart.lines.edges.map(edge => edge.node.id);
+
+    // Utiliser la même mutation que removeCartLine mais avec tous les lineIds
+    const query = `
+      mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+        cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+          cart {
+            id
+            checkoutUrl
+            totalQuantity
+            cost {
+              totalAmount {
+                amount
+                currencyCode
+              }
+            }
+            lines(first: 250) {
+              edges {
+                node {
+                  id
+                  quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id
+                      product {
+                        title
+                        handle
+                        images(first: 1) {
+                          edges {
+                            node {
+                              url
+                              altText
+                            }
+                          }
+                        }
+                      }
+                      selectedOptions {
+                        name
+                        value
+                      }
+                      price {
+                        amount
+                        currencyCode
+                      }
+                    }
+                  }
+                  cost {
+                    totalAmount {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+            }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      cartId,
+      lineIds,
+    };
+
+    const response = await fetch(
+      `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_ACCESS_TOKEN,
+        },
+        body: JSON.stringify({ query, variables }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Shopify API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.errors) {
+      console.error('Shopify GraphQL errors:', data.errors);
+      return {
+        success: false,
+        error: data.errors[0]?.message || 'Erreur lors du vidage du panier',
+      };
+    }
+
+    if (data.data?.cartLinesRemove?.userErrors && data.data.cartLinesRemove.userErrors.length > 0) {
+      console.error('Shopify user errors:', data.data.cartLinesRemove.userErrors);
+      return {
+        success: false,
+        error: data.data.cartLinesRemove.userErrors[0]?.message || 'Erreur lors du vidage du panier',
+      };
+    }
+
+    return {
+      success: true,
+      cart: data.data.cartLinesRemove.cart,
+    };
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
+    };
+  }
+}

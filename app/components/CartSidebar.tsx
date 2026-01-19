@@ -558,7 +558,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             <button
               onClick={handleCheckout}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-green-500 to-yellow-500 text-black font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white text-black border-2 border-white font-['Dela_Gothic_One',sans-serif] py-4 px-8 text-lg uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Passer la commande
             </button>

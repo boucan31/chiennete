@@ -2,7 +2,7 @@
 
 export default function Manifeste() {
   return (
-    <section id="manifeste" className="py-32 px-12 relative overflow-hidden bg-[#111111] z-10">
+    <section id="manifeste" className="pt-32 px-12 relative overflow-hidden bg-[#111111] z-10">
       <div className="max-w-[800px] mx-auto">
         <h2 className="font-['Unbounded',sans-serif] text-[clamp(1.8rem,4vw,3.5rem)] font-bold leading-[1.15] mb-8">
           On fait pas du streetwear pour <span className="bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent italic">plaire</span>.<br />

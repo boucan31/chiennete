@@ -26,6 +26,10 @@ interface ShopifyProduct {
     currencyCode: string;
     title: string;
     availableForSale: boolean;
+    selectedOptions: Array<{
+      name: string;
+      value: string;
+    }>;
   }>;
   onlineStoreUrl?: string;
   availableForSale?: boolean;
@@ -69,6 +73,10 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
                     }
                     title
                     availableForSale
+                    selectedOptions {
+                      name
+                      value
+                    }
                   }
                 }
               }
@@ -140,6 +148,10 @@ export async function getProducts(): Promise<ShopifyProduct[]> {
             currencyCode: variant.node.price.currencyCode,
             title: variant.node.title,
             availableForSale: variant.node.availableForSale ?? true,
+            selectedOptions: variant.node.selectedOptions?.map((opt: any) => ({
+              name: opt.name,
+              value: opt.value,
+            })) || [],
           };
         }),
         availableForSale: edge.node.availableForSale ?? true,
@@ -235,6 +247,10 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
                 }
                 title
                 availableForSale
+                selectedOptions {
+                  name
+                  value
+                }
               }
             }
           }
@@ -264,8 +280,21 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
 
     const data = await response.json();
 
-    if (data.errors || !data.data.product) {
+    // Vérifier les erreurs GraphQL
+    if (data.errors) {
       console.error('Shopify GraphQL errors:', data.errors);
+      return null;
+    }
+
+    // Vérifier si data.data existe
+    if (!data.data) {
+      console.error('Shopify API response missing data:', data);
+      return null;
+    }
+
+    // Vérifier si le produit existe
+    if (!data.data.product) {
+      console.warn(`Product with handle "${handle}" not found in Shopify`);
       return null;
     }
 
@@ -298,6 +327,10 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
           currencyCode: variant.node.price.currencyCode,
           title: variant.node.title,
           availableForSale: variant.node.availableForSale ?? true,
+          selectedOptions: variant.node.selectedOptions?.map((opt: any) => ({
+            name: opt.name,
+            value: opt.value,
+          })) || [],
         };
       }),
       availableForSale: product.availableForSale ?? true,
@@ -309,3 +342,182 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
   }
 }
 
+// Get the first sweatshirt from the products list
+export async function getFirstSweatshirt(): Promise<ShopifyProduct | null> {
+  try {
+    const products = await getProducts();
+    
+    // Find the first product that is a sweatshirt
+    // Check by productType, title, or tags
+    const sweatshirt = products.find((product) => {
+      const productTypeLower = (product.productType || '').toLowerCase();
+      const titleLower = product.title.toLowerCase();
+      const tagsLower = product.tags.join(' ').toLowerCase();
+      
+      return (
+        productTypeLower.includes('sweatshirt') ||
+        productTypeLower.includes('sweat') ||
+        titleLower.includes('sweatshirt') ||
+        titleLower.includes('sweat') ||
+        tagsLower.includes('sweatshirt') ||
+        tagsLower.includes('sweat')
+      );
+    });
+    
+    return sweatshirt || null;
+  } catch (error) {
+    console.error('Error fetching first sweatshirt:', error);
+    return null;
+  }
+}
+
+
+// Utility function to list all products with their handles (for debugging)
+export async function listAllProductsWithHandles(): Promise<void> {
+  try {
+    const products = await getProducts();
+    
+    console.log('\n=== LISTE DE TOUS LES PRODUITS ET LEURS HANDLES ===\n');
+    
+    products.forEach((product, index) => {
+      console.log(`${index + 1}. "${product.title}"`);
+      console.log(`   Handle: ${product.handle}`);
+      console.log(`   Type: ${product.productType || 'N/A'}`);
+      console.log(`   Tags: ${product.tags.join(', ') || 'Aucun'}`);
+      console.log('');
+    });
+    
+    console.log('=== FIN DE LA LISTE ===\n');
+    
+    // Chercher spécifiquement les sweaters
+    const sweaters = products.filter((product) => {
+      const titleLower = product.title.toLowerCase();
+      const handleLower = product.handle.toLowerCase();
+      return (
+        titleLower.includes('sweater') ||
+        titleLower.includes('sweat') ||
+        handleLower.includes('sweater') ||
+        handleLower.includes('sweat')
+      );
+    });
+    
+    if (sweaters.length > 0) {
+      console.log('\n=== SWEATERS TROUVÉS ===\n');
+      sweaters.forEach((product, index) => {
+        console.log(`${index + 1}. "${product.title}"`);
+        console.log(`   Handle: ${product.handle}`);
+        console.log('');
+      });
+      console.log('=== FIN DES SWEATERS ===\n');
+    }
+  } catch (error) {
+    console.error('Error listing products:', error);
+  }
+}
+
+// Get sweater product by color
+export async function getSweaterByColor(color: string): Promise<ShopifyProduct | null> {
+  // Mapping couleur → handle du produit
+  const colorToHandle: Record<string, string> = {
+    'blanc': 'sweater-white-drop-2025',
+    'white': 'sweater-white-drop-2025',
+    'gris': 'sweater-grey-drop-2025',
+    'gray': 'sweater-grey-drop-2025',
+    'grey': 'sweater-grey-drop-2025',
+    'noir': 'sweater-black-drop-2025',
+    'black': 'sweater-black-drop-2025',
+  };
+
+  const normalizedColor = color.toLowerCase().trim();
+  const handle = colorToHandle[normalizedColor];
+
+  if (!handle) {
+    console.warn(`No handle found for color: ${color}`);
+    return null;
+  }
+
+  console.log(`Fetching product with handle: ${handle} for color: ${color}`);
+  
+  try {
+    const product = await getProductByHandle(handle);
+    if (!product) {
+      console.warn(`Product not found for handle: ${handle}. Please verify the handle in Shopify.`);
+    }
+    return product;
+  } catch (error) {
+    console.error(`Error fetching sweater for color ${color}:`, error);
+    return null;
+  }
+}
+
+// Get t-shirt product by color
+export async function getTShirtByColor(color: string): Promise<ShopifyProduct | null> {
+  // Mapping couleur → handle du produit
+  const colorToHandle: Record<string, string> = {
+    'blanc': 't-shirt-white-drop-2025',
+    'white': 't-shirt-white-drop-2025',
+    'gris': 't-shirt-grey-drop-2025',
+    'gray': 't-shirt-grey-drop-2025',
+    'grey': 't-shirt-grey-drop-2025',
+    'noir': 't-shirt-black-drop-2025',
+    'black': 't-shirt-black-drop-2025',
+  };
+
+  const normalizedColor = color.toLowerCase().trim();
+  const handle = colorToHandle[normalizedColor];
+
+  if (!handle) {
+    console.warn(`No handle found for t-shirt color: ${color}`);
+    return null;
+  }
+
+  console.log(`Fetching t-shirt product with handle: ${handle} for color: ${color}`);
+  
+  try {
+    const product = await getProductByHandle(handle);
+    if (!product) {
+      console.warn(`T-shirt product not found for handle: ${handle}. Please verify the handle in Shopify.`);
+    }
+    return product;
+  } catch (error) {
+    console.error(`Error fetching t-shirt for color ${color}:`, error);
+    return null;
+  }
+}
+
+// Get beanie product by color
+export async function getBeanieByColor(color: string): Promise<ShopifyProduct | null> {
+  // Mapping couleur → handle du produit
+  const colorToHandle: Record<string, string> = {
+    'blanc': 'white-drop-2025',
+    'white': 'white-drop-2025',
+    'gris': 'grey-drop-2025',
+    'gray': 'grey-drop-2025',
+    'grey': 'grey-drop-2025',
+    'vert': 'green-drop-2025',
+    'green': 'green-drop-2025',
+    'noir': 'black-drop-2025',
+    'black': 'black-drop-2025',
+  };
+
+  const normalizedColor = color.toLowerCase().trim();
+  const handle = colorToHandle[normalizedColor];
+
+  if (!handle) {
+    console.warn(`No handle found for beanie color: ${color}`);
+    return null;
+  }
+
+  console.log(`Fetching beanie product with handle: ${handle} for color: ${color}`);
+  
+  try {
+    const product = await getProductByHandle(handle);
+    if (!product) {
+      console.warn(`Beanie product not found for handle: ${handle}. Please verify the handle in Shopify.`);
+    }
+    return product;
+  } catch (error) {
+    console.error(`Error fetching beanie for color ${color}:`, error);
+    return null;
+  }
+}
